@@ -1,0 +1,49 @@
+package tools;
+
+import core.Particle;
+
+import java.io.BufferedWriter;
+import java.io.Closeable;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
+
+public class PostProcessor implements Closeable {
+    private static final String OUTPUT_FILE_NAME = "dynamicOutput.txt";
+    private final BufferedWriter writer;
+    private int currentEpoch = 0;
+
+    public PostProcessor(String outputName) {
+        try {
+            if (outputName == null)
+                outputName = OUTPUT_FILE_NAME;
+            writer = new BufferedWriter(new FileWriter(outputName));
+        } catch (IOException e) {
+            throw new RuntimeException("Error opening file");
+        }
+    }
+
+    public void processEpoch(List<Particle> particles) {
+        try {
+            writer.write(String.valueOf(currentEpoch++));
+            writer.newLine();
+            particles.forEach(this::processParticle);
+        } catch (IOException e) {
+            throw new RuntimeException("Error writing on output file");
+        }
+    }
+
+    private void processParticle(Particle particle) {
+        try {
+            writer.write(particle.csvString());
+            writer.newLine();
+        } catch (IOException e) {
+            throw new RuntimeException("Error writing on output file");
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        writer.close();
+    }
+}
