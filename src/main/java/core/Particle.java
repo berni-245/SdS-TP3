@@ -32,21 +32,30 @@ public class Particle {
     public void move(double L) {
         x = x + speedx;
         y = y + speedy;
-
-        // Readjust particle if out of bounds
-        x = x % L;
-        if (x < 0) {
-            x += L;
+        //Collide with the wall. TODO: Make this less ugly
+        if (x > L) {
+            x = 2 * L - x;
+            speedx = -speedx;
+        } else if (x < 0) {
+            x = -x;
+            speedx = -speedx;
         }
-        y = y % L;
-        if (y < 0) {
-            y += L;
+        if (y > L) {
+            y = 2 * L - y;
+            speedy = -speedy;
+        } else if (y < 0) {
+            y = -y;
+            speedy = -speedy;
         }
     }
 
-    public double getSpeedX() {
-        return speedx;
+    public int getNextWallCollision(Double L) {
+        double tx = Math.max(Math.ceil(x/speedx),Math.ceil((x-L)/speedx));
+        double ty = Math.max(Math.ceil(y/speedy),Math.ceil((y-L)/speedy));
+        return (int)Math.min(tx,ty);
     }
+
+    public double getSpeedX() { return speedx; }
 
     public double getSpeedY() { return speedy; }
 
@@ -69,12 +78,5 @@ public class Particle {
 
     public int getId() {
         return id;
-    }
-
-    public void updateSpeedX() {
-        speedx = -speedx;
-    }
-    public void updateSpeedY() {
-        speedy = -speedy;
     }
 }
