@@ -23,12 +23,7 @@ public class ParticleGenerator {
             x = random.nextDouble() * gridSize;
             y = random.nextDouble() * gridSize;
             direction = random.nextDouble(-Math.PI, Math.PI);
-            consumer.accept(new Particle(x, y, direction));
+            consumer.accept(new Particle(x, y, direction,speed));
         }
-        Particle.setSpeed(speed);
-        Particle.setNoise(noise);
-        Particle.setRandomNeighborDirection(randomNeighborDirection);
     }
-
-
 }

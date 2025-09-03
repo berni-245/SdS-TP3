@@ -116,22 +116,19 @@ public class Grid implements Iterable<List<Particle>>{
 
 
     public void performCellIndexMethod() {
-        for (Particle p : getParticles())
-            p.resetNeighbors();
         for (int i = 0; i < M*M; i++) {
             for (Particle particle : grid.get(i)) {
                 List<Particle> neighbors = getAboveAndRightAdjacentParticles(i, particle);
                 for (Particle neighbor : neighbors) {
                     if (neighbor.getDistance(particle, L) <= neighborRadius) {
-                        particle.addNeighborDirection(neighbor.getDirection());
-                        neighbor.addNeighborDirection(particle.getDirection());
+                        //TODO: Check for collision
                     }
                 }
                 for (Particle neighbor : getCurrentCellParticles(i, particle)) {
-                    if (neighbor.getDistance(particle, L) <= neighborRadius)
-                        particle.addNeighborDirection(neighbor.getDirection());
+                    if (neighbor.getDistance(particle, L) <= neighborRadius) {
+                        //TODO: Check for collision
+                    }
                 }
-
             }
         }
     }
