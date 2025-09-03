@@ -73,7 +73,7 @@ public class Particle {
     }
 
     public String csvString() {
-        return "%d;%.2f;%.2f;%.2f;%.2f".formatted(id, x, y, speedx, speedy);
+        return "%d;%.2f;%.2f;%.2f".formatted(id, x, y, Math.sqrt(Math.pow(speedx,2)+Math.pow(speedy,2)), Math.atan2(speedy,speedx));
     }
 
     public int getId() {
