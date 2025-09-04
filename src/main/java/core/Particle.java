@@ -9,22 +9,24 @@ public class Particle {
     private final int id;
     private double x, y;
     private double speedx, speedy;
+    private double radius;
 
-    public Particle(double x, double y, double direction, double speed) {
+    public Particle(double x, double y, double direction, double speed, double radius) {
         this.id = globalId++;
         this.x = x;
         this.y = y;
         this.speedx = speed*Math.cos(direction);
         this.speedy = speed*Math.sin(direction);
+        this.radius = radius;
     }
 
     public double getDistance(Particle p, double L) {
         return Math.sqrt(
                     Math.pow(
-                            p.x - x, 2
+                            p.x - x - radius - p.radius, 2
                     ) +
                     Math.pow(
-                            p.y - y, 2
+                            p.y - y - radius - p.radius, 2
                     )
         );
     }

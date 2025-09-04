@@ -12,8 +12,7 @@ public class ParticleGenerator {
             double gridSize,
             Consumer<Particle> consumer,
             double speed,
-            double noise,
-            boolean randomNeighborDirection) {
+            double radius) {
         Random random = new Random();
         random.setSeed(System.currentTimeMillis());
         double x;
@@ -23,7 +22,7 @@ public class ParticleGenerator {
             x = random.nextDouble() * gridSize;
             y = random.nextDouble() * gridSize;
             direction = random.nextDouble(-Math.PI, Math.PI);
-            consumer.accept(new Particle(x, y, direction,speed));
+            consumer.accept(new Particle(x, y, direction,speed,radius));
         }
     }
 }
