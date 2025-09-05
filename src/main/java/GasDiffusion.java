@@ -10,6 +10,7 @@ public class GasDiffusion {
     private final static String V = "V";
     private final static String EPOCH = "epoch";
     private final static String R = "r";
+    private final static String NEIGHBOR_RADIUS = "rc";
     private final static String OUTPUT_FILE = "output";
 
 
@@ -19,9 +20,10 @@ public class GasDiffusion {
         double v = Double.parseDouble(System.getProperty(V));
         int epoch = Integer.parseInt(System.getProperty(EPOCH));
         double r = Double.parseDouble(System.getProperty(R));
+        double neighborRadius = Double.parseDouble(System.getProperty(NEIGHBOR_RADIUS));
         String outputFile = System.getProperty(OUTPUT_FILE);
 
-        Grid grid = new Grid(l, epoch, 1); // TODO remove 1 = rc
+        Grid grid = new Grid(l, epoch, neighborRadius);
         ParticleGenerator.generate(n, l, grid::addParticle, v, r);
         long init =  System.currentTimeMillis();
         try(PostProcessor postProcessor  = new PostProcessor(outputFile)){
