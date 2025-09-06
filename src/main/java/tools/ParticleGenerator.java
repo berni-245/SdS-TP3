@@ -22,7 +22,7 @@ public class ParticleGenerator {
             x = random.nextDouble() * gridSize;
             y = random.nextDouble() * gridSize;
             direction = random.nextDouble(-Math.PI, Math.PI);
-            consumer.accept(new Particle(x, y, direction,speed,radius));
+            consumer.accept(new Particle(x, y, direction, speed, radius));
         }
     }
 }

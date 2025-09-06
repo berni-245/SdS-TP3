@@ -22,10 +22,10 @@ public class GasDiffusion {
         double side = 0.09;
         double speed = 0.01;
 
-        Grid grid = new Grid(2*side, side, l, epoch, neighborRadius, particleRadius);
+        Grid grid = new Grid(2 * side, side, l, epoch, neighborRadius, particleRadius);
         ParticleGenerator.generate(n, l, grid::addParticle, speed, particleRadius);
-        long init =  System.currentTimeMillis();
-        try(PostProcessor postProcessor  = new PostProcessor(outputFile)){
+        long init = System.currentTimeMillis();
+        try (PostProcessor postProcessor = new PostProcessor(outputFile)) {
             grid.iterator().forEachRemaining(postProcessor::processEpoch);
         } catch (IOException e) {
             throw new RuntimeException(e);

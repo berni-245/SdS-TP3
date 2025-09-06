@@ -1,6 +1,6 @@
 package core;
 
-public class EventType implements Comparable<EventType>{
+public class EventType implements Comparable<EventType> {
     private final double t;
     private final Particle p1;
     private final Particle p2;

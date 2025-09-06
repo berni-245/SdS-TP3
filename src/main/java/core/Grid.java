@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 
-public class Grid implements Iterable<List<Particle>>{
+public class Grid implements Iterable<List<Particle>> {
     private final double base;
     private final double height;
     private final double L;
@@ -26,9 +26,9 @@ public class Grid implements Iterable<List<Particle>>{
             throw new IllegalArgumentException("Base and Height must be positive");
         if (M <= 0 || N <= 0 || L <= 0 || maxEpoch <= 0 || neighborRadius <= 0)
             throw new IllegalArgumentException("M, N, L, maxEpoch and neighborRadius must be positive");
-        if (M >= height/(neighborRadius + 2*fixedParticleRadius))
+        if (M >= height / (neighborRadius + 2 * fixedParticleRadius))
             throw new IllegalArgumentException("M must be smaller than height/(neighborRadius + 2*parRadius)");
-        if (N >= base/(neighborRadius + 2*fixedParticleRadius))
+        if (N >= base / (neighborRadius + 2 * fixedParticleRadius))
             throw new IllegalArgumentException("N must be smaller than base/(neighborRadius + 2*parRadius)");
         this.base = base;
         this.height = height;
@@ -44,7 +44,7 @@ public class Grid implements Iterable<List<Particle>>{
 
         this.particles = new ArrayList<>();
         this.grid = new ArrayList<>();
-        for (int i = 0; i < M*N; i++) {
+        for (int i = 0; i < M * N; i++) {
             grid.add(new ArrayList<>());
         }
     }
@@ -52,8 +52,8 @@ public class Grid implements Iterable<List<Particle>>{
     public Grid(double base, double height, double L, int maxEpoch, double neighborRadius, double fixedParticleRadius) {
         this(
                 base, height, L,
-                (int) Math.round(Math.ceil(height/(neighborRadius + 2*fixedParticleRadius) - 1)),
-                (int) Math.round(Math.ceil(base/(neighborRadius + 2*fixedParticleRadius) - 1)),
+                (int) Math.round(Math.ceil(height / (neighborRadius + 2 * fixedParticleRadius) - 1)),
+                (int) Math.round(Math.ceil(base / (neighborRadius + 2 * fixedParticleRadius) - 1)),
                 maxEpoch, neighborRadius, fixedParticleRadius
         );
     }
@@ -61,7 +61,7 @@ public class Grid implements Iterable<List<Particle>>{
     /**
      * Particles on horizontal cell borders go to the upper cell,
      * and particles on vertical cell borders go to the right cell.
-    */
+     */
     public void addParticle(Particle particle) {
         addParticleToGrid(particle);
         particles.add(particle);
@@ -110,7 +110,7 @@ public class Grid implements Iterable<List<Particle>>{
             @Override
             public List<Particle> next() {
                 performCellIndexMethod();
-                for (int i = 0; i < M*N; i++) {
+                for (int i = 0; i < M * N; i++) {
                     for (Particle particle : grid.get(i)) {
 //                        particle.move(L,S); TODO refactor this
                         System.out.println("Refactoricé el código pero estoy muy cansado para entender la matemática del move");
@@ -118,7 +118,7 @@ public class Grid implements Iterable<List<Particle>>{
                 }
 
                 grid = new ArrayList<>();
-                for (int i = 0; i < M*N; i++) {
+                for (int i = 0; i < M * N; i++) {
                     grid.add(new ArrayList<>());
                 }
 
@@ -134,7 +134,7 @@ public class Grid implements Iterable<List<Particle>>{
 
 
     public void performCellIndexMethod() {
-        for (int i = 0; i < M*N; i++) {
+        for (int i = 0; i < M * N; i++) {
             for (Particle particle : grid.get(i)) {
                 List<Particle> neighbors = getAboveAndRightAdjacentParticles(i, particle);
                 for (Particle neighbor : neighbors) {
@@ -159,8 +159,8 @@ public class Grid implements Iterable<List<Particle>>{
 
         int[][] directions = {
                 {1, 0}, {1, 1}, // above, upper right
-                        {0, 1}, // right
-                        {-1, 1} // lower right
+                {0, 1}, // right
+                {-1, 1} // lower right
         };
 
         for (int[] dir : directions) {

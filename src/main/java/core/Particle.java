@@ -1,9 +1,5 @@
 package core;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 public class Particle {
     private static int globalId = 1;
     private final int id;
@@ -15,19 +11,19 @@ public class Particle {
         this.id = globalId++;
         this.x = x;
         this.y = y;
-        this.speedx = speed*Math.cos(direction);
-        this.speedy = speed*Math.sin(direction);
+        this.speedx = speed * Math.cos(direction);
+        this.speedy = speed * Math.sin(direction);
         this.radius = radius;
     }
 
     public double getDistance(Particle p, double L) {
         return Math.sqrt(
-                    Math.pow(
-                            p.x - x - radius - p.radius, 2
-                    ) +
-                    Math.pow(
-                            p.y - y - radius - p.radius, 2
-                    )
+                Math.pow(
+                        p.x - x - radius - p.radius, 2
+                ) +
+                        Math.pow(
+                                p.y - y - radius - p.radius, 2
+                        )
         );
     }
 
@@ -38,22 +34,22 @@ public class Particle {
         //Collide with the wall. TODO: Make this less ugly
         if (x > L) {
             //Colision con el especio de la ranura
-            if(y<L/2-S/2||y>L/2+S/2) {
+            if (y < L / 2 - S / 2 || y > L / 2 + S / 2) {
                 //Colison Horizaontal
-                if(oldX < L) {
+                if (oldX < L) {
                     x = 2 * L - x;
                     speedx = -speedx;
                 } else {
                     //Colision vertical desde abajo
-                    if(y>L/2+S/2)
+                    if (y > L / 2 + S / 2)
                         y = L + S - y;
-                    //Colision vertical desde arriba
+                        //Colision vertical desde arriba
                     else
                         y = L - S - y;
                     speedy = -speedy;
                 }
-            } else if(x>2*L) {
-                x=4*L - x;
+            } else if (x > 2 * L) {
+                x = 4 * L - x;
                 speedx = -speedx;
             }
         } else if (x < 0) {
@@ -70,14 +66,18 @@ public class Particle {
     }
 
     public int getNextWallCollision(Double L) {
-        double tx = Math.max(Math.ceil(x/speedx),Math.ceil((x-L)/speedx));
-        double ty = Math.max(Math.ceil(y/speedy),Math.ceil((y-L)/speedy));
-        return (int)Math.min(tx,ty);
+        double tx = Math.max(Math.ceil(x / speedx), Math.ceil((x - L) / speedx));
+        double ty = Math.max(Math.ceil(y / speedy), Math.ceil((y - L) / speedy));
+        return (int) Math.min(tx, ty);
     }
 
-    public double getSpeedX() { return speedx; }
+    public double getSpeedX() {
+        return speedx;
+    }
 
-    public double getSpeedY() { return speedy; }
+    public double getSpeedY() {
+        return speedy;
+    }
 
     public double getX() {
         return x;
@@ -93,7 +93,7 @@ public class Particle {
     }
 
     public String csvString() {
-        return "%d;%.2f;%.2f;%.2f".formatted(id, x, y, Math.atan2(speedy,speedx));
+        return "%d;%.2f;%.2f;%.2f".formatted(id, x, y, Math.atan2(speedy, speedx));
     }
 
     public int getId() {
