@@ -27,37 +27,38 @@ public class Particle {
         );
     }
 
-    public void move(double L, double S) {
+
+    public void move(double L, double B, double H, double t) {
         double oldX = x;
-        x = x + speedx;
-        y = y + speedy;
+        x = x + speedx*t;
+        y = y + speedy*t;
         //Collide with the wall. TODO: Make this less ugly
         if (x > L) {
             //Colision con el especio de la ranura
-            if (y < L / 2 - S / 2 || y > L / 2 + S / 2) {
+            if (y < H / 2 - L / 2 || y > H / 2 + L / 2) {
                 //Colison Horizaontal
-                if (oldX < L) {
-                    x = 2 * L - x;
+                if (oldX < B/2) {
+                    x = B - x;
                     speedx = -speedx;
                 } else {
                     //Colision vertical desde abajo
-                    if (y > L / 2 + S / 2)
-                        y = L + S - y;
+                    if (y > H / 2 + L / 2)
+                        y = H + L - y;
                         //Colision vertical desde arriba
                     else
-                        y = L - S - y;
+                        y = H - L - y;
                     speedy = -speedy;
                 }
-            } else if (x > 2 * L) {
-                x = 4 * L - x;
+            } else if (x > B) {
+                x = 2 * B - x;
                 speedx = -speedx;
             }
         } else if (x < 0) {
             x = -x;
             speedx = -speedx;
         }
-        if (y > L) {
-            y = 2 * L - y;
+        if (y > H) {
+            y = 2 * H - y;
             speedy = -speedy;
         } else if (y < 0) {
             y = -y;

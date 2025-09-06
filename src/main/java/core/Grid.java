@@ -112,8 +112,8 @@ public class Grid implements Iterable<List<Particle>> {
                 performCellIndexMethod();
                 for (int i = 0; i < M * N; i++) {
                     for (Particle particle : grid.get(i)) {
-//                        particle.move(L,S); TODO refactor this
-                        System.out.println("Refactoricé el código pero estoy muy cansado para entender la matemática del move");
+                        //TODO: Change the magic 1 to the time until the next event
+                        particle.move(L,base,height,1);
                     }
                 }
 
