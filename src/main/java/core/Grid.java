@@ -8,6 +8,7 @@ import java.util.function.Function;
 public class Grid implements Iterable<List<Particle>>{
     private final double L;
     private final int M;
+    private final double S;
     private final int maxEpoch;
     private final double neighborRadius;
     private final double cellLength;
@@ -17,13 +18,14 @@ public class Grid implements Iterable<List<Particle>>{
     private List<List<Particle>> grid;
     private final List<Particle> particles;
 
-    public Grid(double L, int M, int maxEpoch, double neighborRadius) {
+    public Grid(double L, int M, int maxEpoch, double neighborRadius, double S) {
         if (M <= 0 || L <= 0 || maxEpoch <= 0 || neighborRadius <= 0)
             throw new IllegalArgumentException("M, L, maxEpoch and neighborRadius must be positive");
         if (M >= L/neighborRadius)
             throw new IllegalArgumentException("M must be smaller than L/neighborRadius");
         this.L = L;
         this.M = M;
+        this.S = S;
         this.maxEpoch = maxEpoch;
         this.neighborRadius = neighborRadius;
         this.cellLength = L / M;
@@ -37,8 +39,8 @@ public class Grid implements Iterable<List<Particle>>{
         }
     }
 
-    public Grid(double L, int maxEpoch, double neighborRadius) {
-        this(L, (int) Math.round(Math.ceil(L/neighborRadius - 1)), maxEpoch, neighborRadius);
+    public Grid(double L, int maxEpoch, double neighborRadius, double S) {
+        this(L, (int) Math.round(Math.ceil(L/neighborRadius - 1)), maxEpoch, neighborRadius, S);
     }
 
     /**
@@ -95,7 +97,7 @@ public class Grid implements Iterable<List<Particle>>{
                 performCellIndexMethod();
                 for (int i = 0; i < M*M; i++) {
                     for (Particle particle : grid.get(i)) {
-                        particle.move(L);
+                        particle.move(L,S);
                     }
                 }
 
