@@ -7,26 +7,23 @@ import java.io.IOException;
 public class GasDiffusion {
     private final static String N = "N";
     private final static String L = "L";
-    private final static String V = "V";
     private final static String EPOCH = "epoch";
-    private final static String R = "r";
     private final static String NEIGHBOR_RADIUS = "rc";
     private final static String OUTPUT_FILE = "output";
-    private final static String S = "s";
 
 
     public static void main(String[] args) {
         int n = Integer.parseInt(System.getProperty(N));
         double l = Double.parseDouble(System.getProperty(L));
-        double v = Double.parseDouble(System.getProperty(V));
         int epoch = Integer.parseInt(System.getProperty(EPOCH));
-        double r = Double.parseDouble(System.getProperty(R));
         double neighborRadius = Double.parseDouble(System.getProperty(NEIGHBOR_RADIUS));
-        double s = Double.parseDouble(System.getProperty(S));
         String outputFile = System.getProperty(OUTPUT_FILE);
+        double particleRadius = 0.0015;
+        double side = 0.09;
+        double speed = 0.01;
 
-        Grid grid = new Grid(l, epoch, neighborRadius, s);
-        ParticleGenerator.generate(n, l, grid::addParticle, v, r);
+        Grid grid = new Grid(2*side, side, l, epoch, neighborRadius, particleRadius);
+        ParticleGenerator.generate(n, l, grid::addParticle, speed, particleRadius);
         long init =  System.currentTimeMillis();
         try(PostProcessor postProcessor  = new PostProcessor(outputFile)){
             grid.iterator().forEachRemaining(postProcessor::processEpoch);
