@@ -38,6 +38,10 @@ public class EventType implements Comparable<EventType> {
         return p2;
     }
 
+    public boolean hasP2(){
+        return p2 != null;
+    }
+
     @Override
     public int compareTo(EventType o) {
         return Double.compare(t, o.t);

@@ -16,6 +16,10 @@ public class EventHandler {
 
     public void addEvent(EventType event) {
         queue.add(event);
+        particleEvents.get(event.getP1().getId() - 1).add(event);
+        if(event.hasP2()){
+            particleEvents.get(event.getP2().getId() - 1).add(event);
+        }
     }
 
     public EventType getNextValidEvent() {
