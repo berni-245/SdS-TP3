@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 
-public class Grid implements Iterable<List<Particle>> {
+public class Grid implements Iterable<Time> {
     private final double base;
     private final double height;
     private final double L;
@@ -15,8 +15,9 @@ public class Grid implements Iterable<List<Particle>> {
     private final double neighborRadius;
     private final double vCellLength;
     private final double hCellLength;
+    private final EventHandler eventHandler;
 
-    private int epoch;
+    private double epoch;
 
     private List<List<Particle>> grid;
     private final List<Particle> particles;
@@ -47,6 +48,7 @@ public class Grid implements Iterable<List<Particle>> {
         for (int i = 0; i < M * N; i++) {
             grid.add(new ArrayList<>());
         }
+        this.eventHandler = new EventHandler(N);
     }
 
     public Grid(double base, double height, double L, int maxEpoch, double neighborRadius, double fixedParticleRadius) {
@@ -100,7 +102,7 @@ public class Grid implements Iterable<List<Particle>> {
     }
 
     @Override
-    public Iterator<List<Particle>> iterator() {
+    public Iterator<Time> iterator() {
         return new Iterator<>() {
             @Override
             public boolean hasNext() {
@@ -108,7 +110,8 @@ public class Grid implements Iterable<List<Particle>> {
             }
 
             @Override
-            public List<Particle> next() {
+            public Time next() {
+                EventType eventType = eventHandler.getNextValidEvent(); //TODO: usar la info del event
                 performCellIndexMethod();
                 for (int i = 0; i < M * N; i++) {
                     for (Particle particle : grid.get(i)) {
@@ -126,8 +129,11 @@ public class Grid implements Iterable<List<Particle>> {
                     addParticleToGrid(particle);
                 }
 
-                epoch++;
-                return particles;
+                //TODO invalidar eventos de particulas involucradas en evento actual
+
+                Time time = new Time(epoch, particles);
+                epoch++; //TODO: actualizar con el time del Event
+                return time;
             }
         };
     }

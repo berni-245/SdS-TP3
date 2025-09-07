@@ -1,6 +1,7 @@
 package tools;
 
 import core.Particle;
+import core.Time;
 
 import java.io.BufferedWriter;
 import java.io.Closeable;
@@ -11,7 +12,6 @@ import java.util.List;
 public class PostProcessor implements Closeable {
     private static final String OUTPUT_FILE_NAME = "dynamicOutput.txt";
     private final BufferedWriter writer;
-    private int currentEpoch = 0;
 
     public PostProcessor(String outputName) {
         try {
@@ -23,11 +23,11 @@ public class PostProcessor implements Closeable {
         }
     }
 
-    public void processEpoch(List<Particle> particles) {
+    public void processEpoch(Time time) {
         try {
-            writer.write(String.valueOf(currentEpoch++));
+            writer.write(String.valueOf(time.getTime()));
             writer.newLine();
-            particles.forEach(this::processParticle);
+            time.getParticles().forEach(this::processParticle);
         } catch (IOException e) {
             throw new RuntimeException("Error writing on output file");
         }
