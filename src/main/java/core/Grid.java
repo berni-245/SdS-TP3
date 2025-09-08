@@ -142,14 +142,14 @@ public class Grid implements Iterable<Time> {
     public void performCellIndexMethod() {
         for (int i = 0; i < M * N; i++) {
             for (Particle particle : grid.get(i)) {
-                List<Particle> neighbors = getAboveAndRightAdjacentParticles(i, particle);
+                List<Particle> neighbors = getAboveAndRightAdjacentParticles(i);
                 for (Particle neighbor : neighbors) {
-                    if (neighbor.getDistance(particle, L) <= neighborRadius) {
+                    if (neighbor.getDistance(particle) <= neighborRadius) {
                         //TODO: Check for collision
                     }
                 }
                 for (Particle neighbor : getCurrentCellParticles(i, particle)) {
-                    if (neighbor.getDistance(particle, L) <= neighborRadius) {
+                    if (neighbor.getDistance(particle) <= neighborRadius) {
                         //TODO: Check for collision
                     }
                 }
@@ -157,7 +157,7 @@ public class Grid implements Iterable<Time> {
         }
     }
 
-    private List<Particle> getAboveAndRightAdjacentParticles(int cellIndex, Particle particle) {
+    private List<Particle> getAboveAndRightAdjacentParticles(int cellIndex) {
         List<Particle> adjacentParticles = new ArrayList<>();
 
         int row = cellIndex / N;

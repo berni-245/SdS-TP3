@@ -5,7 +5,7 @@ public class Particle {
     private final int id;
     private double x, y;
     private double speedx, speedy;
-    private double radius;
+    private final double radius;
 
     public Particle(double x, double y, double direction, double speed, double radius) {
         this.id = globalId++;
@@ -16,7 +16,7 @@ public class Particle {
         this.radius = radius;
     }
 
-    public double getDistance(Particle p, double L) {
+    public double getDistance(Particle p) {
         return Math.sqrt(
                 Math.pow(
                         p.x - x - radius - p.radius, 2
@@ -99,16 +99,8 @@ public class Particle {
         }
     }
 
-    public void updateX(double x) {
-        this.x = x;
-    }
-
     public void updateSpeedX(double speedX) {
         this.speedx = speedX;
-    }
-
-    public void updateY(double y) {
-        this.y = y;
     }
 
     public void updateSpeedY(double speedY) {
