@@ -116,11 +116,46 @@ public class Particle {
         this.speedy = speedY;
     }
 
-    public int getNextWallCollision(Double L) {
-        double tx = Math.max(Math.ceil(x / speedx), Math.ceil((x - L) / speedx));
-        double ty = Math.max(Math.ceil(y / speedy), Math.ceil((y - L) / speedy));
-        return (int) Math.min(tx, ty);
+    public EventType getNextWallCollision(Double L, Double B, Double H) {
+        double tr,yr;
+        if(speedx > 0){
+            if(x < B/2){
+                tr = (B/2 - (x+radius)) / speedx;
+                yr = y + speedy*tr;
+                if(yr+radius>H){
+                    return new EventType((H - (y+radius))/ speedy, this); //Colli Vert en t=(H-(y+r))/speedy
+                }else if(yr - radius < 0){
+                    return new EventType(-(y-radius)/speedy,this); //Colli Vert en t=-(y-r)/speedy
+                }else if ((y+radius > H - ((H-L)/2))|| y-radius<(H-L)/2){
+                    return new EventType(tr,this);//Collision Horizontal en tr
+                }
+            }else {
+                tr = (B - (x+radius)) / speedx;
+                yr = y + speedy * tr;
+                if( yr -radius < (H -L) / 2){
+                    return new EventType(((H-L)/2-(y-radius)),this);
+                }else if(yr+radius > H -(H-L)/2){
+                    return new EventType((H-(H-L)/2-(y+radius))/speedy,this);
+                }
+                return new EventType(tr,this);
+            }
+
+        }
+
+        if(x > B/2){
+            tr = (B/2 - (x+radius)) / speedx;
+            yr = y + speedy * tr;
+            if(yr+radius>H-(H-L)/2){
+                return new EventType(((H-(H-L)/2)-(y+radius))/speedy,this);
+            }
+            if(yr - radius < (H-L)/2){
+                return new EventType(((H-L)/2-(y-radius))/speedy,this);
+            }
+        }
+        return new EventType(Math.min((x-radius)/speedx,(H-(y+radius)/speedy)),this) ;
+
     }
+
 
     public double getSpeedX() {
         return speedx;
