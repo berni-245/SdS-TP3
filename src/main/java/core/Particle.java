@@ -27,40 +27,73 @@ public class Particle {
         );
     }
 
+    //TODO: This will probably put some particles inside a wall but it will be corrected when they're moved for the next event
+    public void move(Particle p, double t) {
+        double oldX1 = x;
+        double oldY1 = y;
+        double oldX2 = p.x;
+        double oldY2 = p.y;
+        x += speedx * t;
+        y += speedy * t;
+        p.x += p.speedx * t;
+        p.y += p.speedy * t;
+        if(oldX2>oldX1){
+            double deltaX = x + radius - (p.x - p.radius);
+            x -= deltaX;
+            p.x += deltaX;
+        } else {
+            double deltaX = p.x + p.radius - (x - radius);
+            x += deltaX;
+            p.x -= deltaX;
+        }
+        speedx = -speedx;
+        p.speedy = -p.speedx;
+        if(oldY2>oldY1){
+            double deltaY = y + radius - (p.y - p.radius);
+            y -= deltaY;
+            p.y += deltaY;
+        } else {
+            double deltaY = p.y + p.radius - (y - radius);
+            y += deltaY;
+            p.y -= deltaY;
+        }
+        speedy = -speedy;
+        p.speedy = -p.speedy;
+    }
 
     public void move(double L, double B, double H, double t) {
         double oldX = x;
         x = x + speedx*t;
         y = y + speedy*t;
         //Collide with the wall. TODO: Make this less ugly
-        if (x > L) {
+        if (x+radius > B/2) {
             //Colision con el especio de la ranura
-            if (y < H / 2 - L / 2 || y > H / 2 + L / 2) {
+            if (y-radius < H / 2 - L / 2 || y+radius > H / 2 + L / 2) {
                 //Colison Horizaontal
                 if (oldX < B/2) {
                     x = B - x;
                     speedx = -speedx;
                 } else {
                     //Colision vertical desde abajo
-                    if (y > H / 2 + L / 2)
+                    if (y+radius > H / 2 + L / 2)
                         y = H + L - y;
                         //Colision vertical desde arriba
                     else
                         y = H - L - y;
                     speedy = -speedy;
                 }
-            } else if (x > B) {
+            } else if (x+radius > B) {
                 x = 2 * B - x;
                 speedx = -speedx;
             }
-        } else if (x < 0) {
+        } else if (x-radius < 0) {
             x = -x;
             speedx = -speedx;
         }
-        if (y > H) {
+        if (y+radius > H) {
             y = 2 * H - y;
             speedy = -speedy;
-        } else if (y < 0) {
+        } else if (y-radius < 0) {
             y = -y;
             speedy = -speedy;
         }
