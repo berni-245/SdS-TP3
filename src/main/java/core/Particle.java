@@ -99,6 +99,22 @@ public class Particle {
         }
     }
 
+    public void updateX(double x) {
+        this.x = x;
+    }
+
+    public void updateSpeedX(double speedX) {
+        this.speedx = speedX;
+    }
+
+    public void updateY(double y) {
+        this.y = y;
+    }
+
+    public void updateSpeedY(double speedY) {
+        this.speedy = speedY;
+    }
+
     public int getNextWallCollision(Double L) {
         double tx = Math.max(Math.ceil(x / speedx), Math.ceil((x - L) / speedx));
         double ty = Math.max(Math.ceil(y / speedy), Math.ceil((y - L) / speedy));
