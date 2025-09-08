@@ -101,9 +101,9 @@ public class Grid implements Iterable<Time> {
         return particles;
     }
 
-    private class timeIterator implements Iterator<Time>{
+    private class TimeIterator implements Iterator<Time>{
 
-        public timeIterator(){
+        public TimeIterator(){
             //search first events
         }
 
@@ -142,7 +142,7 @@ public class Grid implements Iterable<Time> {
 
     @Override
     public Iterator<Time> iterator() {
-        return new timeIterator();
+        return new TimeIterator();
     }
 
 
