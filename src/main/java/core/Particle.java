@@ -1,11 +1,15 @@
 package core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Particle {
     private static int globalId = 1;
     private final int id;
     private double x, y;
     private double speedx, speedy;
     private final double radius;
+    private final List<Particle> neighbors;
 
     public Particle(double x, double y, double direction, double speed, double radius) {
         this.id = globalId++;
@@ -14,6 +18,7 @@ public class Particle {
         this.speedx = speed * Math.cos(direction);
         this.speedy = speed * Math.sin(direction);
         this.radius = radius;
+        this.neighbors = new ArrayList<>();
     }
 
     public double getDistance(Particle p) {
@@ -97,6 +102,10 @@ public class Particle {
             y = -y;
             speedy = -speedy;
         }
+    }
+
+    public void addNeighbor(Particle p) {
+        neighbors.add(p);
     }
 
     public void updateSpeedX(double speedX) {

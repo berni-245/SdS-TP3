@@ -152,12 +152,13 @@ public class Grid implements Iterable<Time> {
                 List<Particle> neighbors = getAboveAndRightAdjacentParticles(i);
                 for (Particle neighbor : neighbors) {
                     if (neighbor.getDistance(particle) <= neighborRadius) {
-                        //TODO: Check for collision
+                        particle.addNeighbor(neighbor);
+                        neighbor.addNeighbor(particle);
                     }
                 }
                 for (Particle neighbor : getCurrentCellParticles(i, particle)) {
                     if (neighbor.getDistance(particle) <= neighborRadius) {
-                        //TODO: Check for collision
+                        particle.addNeighbor(neighbor);
                     }
                 }
             }
