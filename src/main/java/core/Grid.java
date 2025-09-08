@@ -101,41 +101,48 @@ public class Grid implements Iterable<Time> {
         return particles;
     }
 
+    private class timeIterator implements Iterator<Time>{
+
+        public timeIterator(){
+            //search first events
+        }
+
+        @Override
+        public boolean hasNext() {
+            return epoch < maxEpoch;
+        }
+
+        @Override
+        public Time next() {
+            EventType eventType = eventHandler.getNextValidEvent(); //TODO: usar la info del event
+            performCellIndexMethod();
+            for (int i = 0; i < M * N; i++) {
+                for (Particle particle : grid.get(i)) {
+                    //TODO: Change the magic 1 to the time until the next event
+                    particle.move(L,base,height,1);
+                }
+            }
+
+            grid = new ArrayList<>();
+            for (int i = 0; i < M * N; i++) {
+                grid.add(new ArrayList<>());
+            }
+
+            for (Particle particle : getParticles()) {
+                addParticleToGrid(particle);
+            }
+
+            //TODO invalidar eventos de particulas involucradas en evento actual
+
+            Time time = new Time(epoch, particles);
+            epoch++; //TODO: actualizar con el time del Event
+            return time;
+        }
+    }
+
     @Override
     public Iterator<Time> iterator() {
-        return new Iterator<>() {
-            @Override
-            public boolean hasNext() {
-                return epoch < maxEpoch;
-            }
-
-            @Override
-            public Time next() {
-                EventType eventType = eventHandler.getNextValidEvent(); //TODO: usar la info del event
-                performCellIndexMethod();
-                for (int i = 0; i < M * N; i++) {
-                    for (Particle particle : grid.get(i)) {
-                        //TODO: Change the magic 1 to the time until the next event
-                        particle.move(L,base,height,1);
-                    }
-                }
-
-                grid = new ArrayList<>();
-                for (int i = 0; i < M * N; i++) {
-                    grid.add(new ArrayList<>());
-                }
-
-                for (Particle particle : getParticles()) {
-                    addParticleToGrid(particle);
-                }
-
-                //TODO invalidar eventos de particulas involucradas en evento actual
-
-                Time time = new Time(epoch, particles);
-                epoch++; //TODO: actualizar con el time del Event
-                return time;
-            }
-        };
+        return new timeIterator();
     }
 
 
