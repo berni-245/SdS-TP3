@@ -7,7 +7,6 @@ import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 
 public class PostProcessor implements Closeable {
     private static final String OUTPUT_FILE_NAME = "dynamicOutput.txt";
@@ -25,9 +24,9 @@ public class PostProcessor implements Closeable {
 
     public void processEpoch(Time time) {
         try {
-            writer.write(String.valueOf(time.getTime()));
+            writer.write(String.valueOf(time.time()));
             writer.newLine();
-            time.getParticles().forEach(this::processParticle);
+            time.particles().forEach(this::processParticle);
         } catch (IOException e) {
             throw new RuntimeException("Error writing on output file");
         }
