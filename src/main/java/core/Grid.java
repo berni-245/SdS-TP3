@@ -101,10 +101,22 @@ public class Grid implements Iterable<Time> {
         return particles;
     }
 
-    private class TimeIterator implements Iterator<Time>{
+    //no me gusta que el metodo busque y tambien agregue, deberia ver de modularizar
+    private void findParticleEvent(Particle particle){
+        eventHandler.addEvent(particle.getNextWallCollision(L,base,height));
+        for(Particle particle2: particles){
+            if(!particle2.equals(particle)){
+                //verificar si se chocan y agregar al event handler
+            }
+        }
+    }
 
-        public TimeIterator(){
-            //search first events
+    private class TimeIterator implements Iterator<Time> {
+
+        public TimeIterator() {
+            for(Particle particle: particles){
+               findParticleEvent(particle);
+            }
         }
 
         @Override
@@ -114,12 +126,11 @@ public class Grid implements Iterable<Time> {
 
         @Override
         public Time next() {
-            EventType eventType = eventHandler.getNextValidEvent(); //TODO: usar la info del event
+            EventType event = eventHandler.getNextValidEvent();
             performCellIndexMethod();
             for (int i = 0; i < M * N; i++) {
                 for (Particle particle : grid.get(i)) {
-                    //TODO: Change the magic 1 to the time until the next event
-                    particle.move(L,base,height,1);
+                    particle.move(L, base, height, event.getT());
                 }
             }
 
@@ -132,11 +143,17 @@ public class Grid implements Iterable<Time> {
                 addParticleToGrid(particle);
             }
 
-            //TODO invalidar eventos de particulas involucradas en evento actual
 
-            Time time = new Time(epoch, particles);
-            epoch++; //TODO: actualizar con el time del Event
-            return time;
+            if (event.hasP2()) {
+                eventHandler.invalidateParticleEvent(event.getP1(), event.getP2());
+                findParticleEvent(event.getP1());
+                findParticleEvent(event.getP2());
+            } else {
+                eventHandler.invalidateParticleEvent(event.getP1());
+                findParticleEvent(event.getP1());
+            }
+            epoch = event.getT();
+            return new Time(epoch, particles);
         }
     }
 
