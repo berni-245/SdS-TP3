@@ -101,19 +101,21 @@ public class Grid implements Iterable<Time> {
         return particles;
     }
 
-    private void findParticleEvent(Particle particle){
+    private void findParticleEvent(Particle particle) {
         EventType ec = null;
-        EventType wc = particle.getNextWallCollision(L,base,height);
-        for(Particle particle2: particles){
-            if(!particle2.equals(particle)){
+        EventType wc = particle.getNextWallCollision(L, base, height);
+        for (Particle particle2 : particles) {
+            if (!particle2.equals(particle)) {
                 EventType ev = particle.estimateCollision(particle2);
-                if(ev!=null){
-                    if(ec == null || ec.compareTo(ev) > 0){ec = ev;}
+                if (ev != null) {
+                    if (ec == null || ec.compareTo(ev) > 0) {
+                        ec = ev;
+                    }
                 }
             }
         }
-        if(ec!=null)
-            eventHandler.addEvent(ec.compareTo(wc) > 0 ?wc:ec);
+        if (ec != null)
+            eventHandler.addEvent(ec.compareTo(wc) > 0 ? wc : ec);
         else
             eventHandler.addEvent(wc);
     }
@@ -121,8 +123,8 @@ public class Grid implements Iterable<Time> {
     private class TimeIterator implements Iterator<Time> {
 
         public TimeIterator() {
-            for(Particle particle: particles){
-               findParticleEvent(particle);
+            for (Particle particle : particles) {
+                findParticleEvent(particle);
             }
         }
 
