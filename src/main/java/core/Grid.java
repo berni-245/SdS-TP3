@@ -3,6 +3,7 @@ package core;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 public class Grid implements Iterable<Time> {
@@ -152,17 +153,18 @@ public class Grid implements Iterable<Time> {
                 addParticleToGrid(particle);
             }
 
-
+            Set<Particle> mustRevalidate;
             if (event.hasP2()) {
-                eventHandler.invalidateParticleEvent(event.getP1(), event.getP2());
+                mustRevalidate = eventHandler.invalidateParticleEvent(event.getP1(), event.getP2());
                 findParticleEvent(event.getP1());
                 findParticleEvent(event.getP2());
                 //TODO: Falta ver si hay uno o mas P3 que piensa/n
                 // que se va a chocar con P1 o P2
             } else {
-                eventHandler.invalidateParticleEvent(event.getP1());
+                mustRevalidate = eventHandler.invalidateParticleEvent(event.getP1());
                 findParticleEvent(event.getP1());
             }
+            mustRevalidate.forEach(Grid.this::findParticleEvent);
             epoch = event.getT();
             return new Time(epoch, particles);
         }

@@ -136,4 +136,14 @@ public class Particle {
     public int getId() {
         return id;
     }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Particle p && id == p.id;
+    }
 }

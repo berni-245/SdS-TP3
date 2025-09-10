@@ -33,13 +33,31 @@ public class EventHandler {
         return event;
     }
 
-    public void invalidateParticleEvent(Particle particle) {
-        particleEvents.get(particle.getId() - 1).forEach(EventType::invalidate);
+    public Set<Particle> invalidateParticleEvent(Particle particle) {
+        Set<Particle> invalidatedParticles = new HashSet<>();
+        particleEvents.get(particle.getId() - 1).forEach(event -> {
+            if(event.isValid()){
+                event.invalidate();
+                if(!event.getP1().equals(particle)){
+                    invalidatedParticles.add(event.getP1());
+                    invalidateParticleEvent(event.getP1());
+                }
+                if(event.hasP2() && !event.getP2().equals(particle)){
+                    invalidatedParticles.add(event.getP2());
+                    invalidateParticleEvent(event.getP2());
+                }
+            }
+
+        });
+        return invalidatedParticles;
     }
 
-    public void invalidateParticleEvent(Particle particle1, Particle particle2) {
-        invalidateParticleEvent(particle1);
-        invalidateParticleEvent(particle2);
+
+
+    public Set<Particle> invalidateParticleEvent(Particle particle1, Particle particle2) {
+        Set<Particle> set = invalidateParticleEvent(particle1);
+        set.addAll(invalidateParticleEvent(particle2));
+        return set;
     }
 
 
