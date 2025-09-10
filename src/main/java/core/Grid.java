@@ -108,12 +108,12 @@ public class Grid implements Iterable<Time> {
             if(!particle2.equals(particle)){
                 EventType ev = particle.estimateCollision(particle2);
                 if(ev!=null){
-                    if(ec == null || ec.compareTo(ev) == 1){ec = ev;}
+                    if(ec == null || ec.compareTo(ev) > 0){ec = ev;}
                 }
             }
         }
         if(ec!=null)
-            eventHandler.addEvent(ec.compareTo(wc)==1?wc:ec);
+            eventHandler.addEvent(ec.compareTo(wc) > 0 ?wc:ec);
         else
             eventHandler.addEvent(wc);
     }
