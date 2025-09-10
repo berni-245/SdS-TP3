@@ -18,6 +18,8 @@ public class ParticleGenerator {
         double x;
         double y;
         double direction;
+        //TODO: Checkear que las distancias entre todas las particulas sean > 0
+        // Also checkear que las coordenadas cumplan: x>radius y>radius B/2-x>radius H-y>radius
         for (int i = 0; i < particleNumber; i++) {
             x = random.nextDouble() * gridSize;
             y = random.nextDouble() * gridSize;

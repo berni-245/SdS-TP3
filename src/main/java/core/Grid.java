@@ -101,14 +101,21 @@ public class Grid implements Iterable<Time> {
         return particles;
     }
 
-    //no me gusta que el metodo busque y tambien agregue, deberia ver de modularizar
     private void findParticleEvent(Particle particle){
-        eventHandler.addEvent(particle.getNextWallCollision(L,base,height));
+        EventType ec = null;
+        EventType wc = particle.getNextWallCollision(L,base,height);
         for(Particle particle2: particles){
             if(!particle2.equals(particle)){
-                //verificar si se chocan y agregar al event handler
+                EventType ev = particle.estimateCollision(particle2);
+                if(ev!=null){
+                    if(ec == null || ec.compareTo(ev) == 1){ec = ev;}
+                }
             }
         }
+        if(ec!=null)
+            eventHandler.addEvent(ec.compareTo(wc)==1?wc:ec);
+        else
+            eventHandler.addEvent(wc);
     }
 
     private class TimeIterator implements Iterator<Time> {
@@ -130,7 +137,7 @@ public class Grid implements Iterable<Time> {
             performCellIndexMethod();
             for (int i = 0; i < M * N; i++) {
                 for (Particle particle : grid.get(i)) {
-                    particle.move(L, base, height, event.getT());
+                    particle.move(event.getT());
                 }
             }
 
@@ -148,6 +155,8 @@ public class Grid implements Iterable<Time> {
                 eventHandler.invalidateParticleEvent(event.getP1(), event.getP2());
                 findParticleEvent(event.getP1());
                 findParticleEvent(event.getP2());
+                //TODO: Falta ver si hay uno o mas P3 que piensa/n
+                // que se va a chocar con P1 o P2
             } else {
                 eventHandler.invalidateParticleEvent(event.getP1());
                 findParticleEvent(event.getP1());

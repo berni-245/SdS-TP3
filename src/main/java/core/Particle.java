@@ -24,16 +24,15 @@ public class Particle {
     public double getDistance(Particle p) {
         return Math.sqrt(
                 Math.pow(
-                        p.x - x - radius - p.radius, 2
+                        p.x - x, 2
                 ) +
                         Math.pow(
-                                p.y - y - radius - p.radius, 2
+                                p.y - y, 2
                         )
-        );
+        ) - radius - p.radius;
     }
 
-    public void move(double L, double B, double H, double t) {
-        double oldX = x;
+    public void move(double t) {
         x = x + speedx*t;
         y = y + speedy*t;
     }
@@ -50,6 +49,24 @@ public class Particle {
         this.speedy = speedY;
     }
 
+    private double dotProd(double[] v1, double[] v2){
+        return v1[0] * v2[0] + v1[1] * v2[1];
+    }
+
+    public EventType estimateCollision(Particle p) {
+        double[] dr = {x-p.x,y-p.y};
+        double[] dv = {speedx-p.speedx,speedy-p.speedy};
+        double delta = dotProd(dv,dr);
+        if(delta >= 0)
+            return null;
+        double deltaV = dotProd(dv,dv);
+        double d = Math.pow(delta,2) - deltaV*(dotProd(dr,dr)-Math.pow(radius+p.radius,2));
+        if(d<0)
+            return null;
+        double t = - (delta+Math.sqrt(d))/deltaV;
+        return new EventType(t,this,p);
+    }
+
     public EventType getNextWallCollision(Double L, Double B, Double H) {
         double tr,yr;
         if(speedx > 0){
@@ -63,12 +80,12 @@ public class Particle {
                 }else if ((y+radius > H - ((H-L)/2))|| y-radius<(H-L)/2){
                     return new EventType(tr,this);//Collision Horizontal en tr
                 }
-            }else {
+            } else {
                 tr = (B - (x+radius)) / speedx;
                 yr = y + speedy * tr;
-                if( yr -radius < (H -L) / 2){
-                    return new EventType(((H-L)/2-(y-radius)),this);
-                }else if(yr+radius > H -(H-L)/2){
+                if( yr - radius < (H-L)/2){
+                    return new EventType(((H-L)/2 - (y-radius))/speedy,this);
+                }else if(yr+radius > H - (H-L)/2){
                     return new EventType((H-(H-L)/2-(y+radius))/speedy,this);
                 }
                 return new EventType(tr,this);
@@ -86,7 +103,8 @@ public class Particle {
                 return new EventType(((H-L)/2-(y-radius))/speedy,this);
             }
         }
-        return new EventType(Math.min((x-radius)/speedx,(H-(y+radius)/speedy)),this) ;
+        //El max no es un typo. Es para diferenciar por el signo de speedy. Unos va a ser + y el otro negativo segun la direccion vertical
+        return new EventType(Math.min(-(x-radius)/speedx,Math.max(H-(y+radius)/speedy,radius-y/speedy)),this) ;
     }
 
 
