@@ -144,6 +144,8 @@ public class Grid implements Iterable<Time> {
                 }
             }
 
+            event.performEvent();
+
             grid = new ArrayList<>();
             for (int i = 0; i < M * N; i++) {
                 grid.add(new ArrayList<>());
