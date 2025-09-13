@@ -135,21 +135,19 @@ public class Continuum implements Iterable<Time> {
                     return new EventType(-(y - radius) / speedy, particle, WallCollisionType.VERTICAL_COLLISION); //Colli Vert en t=-(y-r)/speedy
                 } else if ((y + radius > sqSize - ((sqSize - L) / 2)) || y - radius < (sqSize - L) / 2) {
                     return new EventType(tr, particle, WallCollisionType.HORIZONTAL_COLLISION);//Collision Horizontal en tr
-                } else {
-                    tr = (rectRightWall - (x + radius)) / speedx;
-                    yr = y + speedy * tr;
-                    if (yr - radius < (sqSize - L) / 2) {
-                        return new EventType(((sqSize - L) / 2 - (y - radius)) / speedy, particle, WallCollisionType.VERTICAL_COLLISION);
-                    } else if (yr + radius > sqSize - (sqSize - L) / 2) {
-                        return new EventType((sqSize - (sqSize - L) / 2 - (y + radius)) / speedy, particle, WallCollisionType.VERTICAL_COLLISION);
-                    }
-                    return new EventType(tr, particle, WallCollisionType.HORIZONTAL_COLLISION);
                 }
             }
+            tr = (rectRightWall - (x + radius)) / speedx;
+            yr = y + speedy * tr;
+            if (yr - radius < (sqSize - L) / 2) {
+                return new EventType(((sqSize - L) / 2 - (y - radius)) / speedy, particle, WallCollisionType.VERTICAL_COLLISION);
+            } else if (yr + radius > sqSize - (sqSize - L) / 2) {
+                return new EventType((sqSize - (sqSize - L) / 2 - (y + radius)) / speedy, particle, WallCollisionType.VERTICAL_COLLISION);
+            }
+            return new EventType(tr, particle, WallCollisionType.HORIZONTAL_COLLISION);
         }
-
         if(x > sqSize){
-            tr = (sqSize - (x+radius)) / speedx;
+            tr = (sqSize - (x-radius)) / speedx;
             yr = y + speedy * tr;
             if(yr+radius>sqSize-(sqSize-L)/2){
                 return new EventType(((sqSize-(sqSize-L)/2)-(y+radius))/speedy,particle, WallCollisionType.VERTICAL_COLLISION);
@@ -158,8 +156,15 @@ public class Continuum implements Iterable<Time> {
                 return new EventType(((sqSize-L)/2-(y-radius))/speedy,particle, WallCollisionType.VERTICAL_COLLISION);
             }
         }
-        //El max no es un typo. Es para diferenciar por el signo de speedy. Unos va a ser + y el otro negativo segun la direccion vertical
-        return new EventType(Math.min(-(x-radius)/speedx,Math.max(sqSize-(y+radius)/speedy,radius-y/speedy)), particle, WallCollisionType.HORIZONTAL_COLLISION) ;
-        // TODO puse Horizontal Collision pero realmente no entiendo este choclo, hablar con @AlekDG
+        double tx = -(x-radius)/speedx;
+        double ty = 0;
+        if(speedy<0)
+            ty = radius-y/speedy;
+        else
+            ty = sqSize-(y+radius)/speedy;
+        if (tx<ty)
+            return new EventType(tx, particle, WallCollisionType.HORIZONTAL_COLLISION);
+        else
+            return new EventType(ty, particle, WallCollisionType.VERTICAL_COLLISION);
     }
 }
