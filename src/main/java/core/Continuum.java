@@ -100,8 +100,6 @@ public class Continuum implements Iterable<Time> {
                 mustRevalidate = eventHandler.invalidateParticleEvent(event.getP1(), event.getP2());
                 findParticleEvent(event.getP1());
                 findParticleEvent(event.getP2());
-                //TODO: Falta ver si hay uno o mas P3 que piensa/n
-                // que se va a chocar con P1 o P2
             } else {
                 mustRevalidate = eventHandler.invalidateParticleEvent(event.getP1());
                 findParticleEvent(event.getP1());
