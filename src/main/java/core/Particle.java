@@ -1,15 +1,11 @@
 package core;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Particle {
     private static int globalId = 1;
     private final int id;
     private double x, y;
     private double speedx, speedy;
     private final double radius;
-    private final List<Particle> neighbors;
 
     public Particle(double x, double y, double direction, double speed, double radius) {
         this.id = globalId++;
@@ -18,7 +14,6 @@ public class Particle {
         this.speedx = speed * Math.cos(direction);
         this.speedy = speed * Math.sin(direction);
         this.radius = radius;
-        this.neighbors = new ArrayList<>();
     }
 
     public double getDistance(Particle p) {
@@ -26,19 +21,15 @@ public class Particle {
                 Math.pow(
                         p.x - x, 2
                 ) +
-                        Math.pow(
-                                p.y - y, 2
-                        )
+                Math.pow(
+                        p.y - y, 2
+                )
         ) - radius - p.radius;
     }
 
     public void move(double t) {
         x = x + speedx*t;
         y = y + speedy*t;
-    }
-
-    public void addNeighbor(Particle p) {
-        neighbors.add(p);
     }
 
     public void updateSpeedX(double speedX) {
@@ -65,47 +56,6 @@ public class Particle {
             return null;
         double t = - (delta+Math.sqrt(d))/deltaV;
         return new EventType(t,this,p);
-    }
-
-    public EventType getNextWallCollision(Double L, Double B, Double H) {
-        double tr,yr;
-        if(speedx > 0){
-            if(x < B/2){
-                tr = (B/2 - (x+radius)) / speedx;
-                yr = y + speedy*tr;
-                if(yr+radius>H){
-                    return new EventType((H - (y+radius))/ speedy, this, WallCollisionType.VERTICAL_COLLISION); //Colli Vert en t=(H-(y+r))/speedy
-                }else if(yr - radius < 0){
-                    return new EventType(-(y-radius)/speedy,this, WallCollisionType.VERTICAL_COLLISION); //Colli Vert en t=-(y-r)/speedy
-                }else if ((y+radius > H - ((H-L)/2))|| y-radius<(H-L)/2){
-                    return new EventType(tr,this, WallCollisionType.HORIZONTAL_COLLISION);//Collision Horizontal en tr
-                }
-            } else {
-                tr = (B - (x+radius)) / speedx;
-                yr = y + speedy * tr;
-                if( yr - radius < (H-L)/2){
-                    return new EventType(((H-L)/2 - (y-radius))/speedy,this, WallCollisionType.VERTICAL_COLLISION);
-                }else if(yr+radius > H - (H-L)/2){
-                    return new EventType((H-(H-L)/2-(y+radius))/speedy,this, WallCollisionType.VERTICAL_COLLISION);
-                }
-                return new EventType(tr,this, WallCollisionType.HORIZONTAL_COLLISION);
-            }
-
-        }
-
-        if(x > B/2){
-            tr = (B/2 - (x+radius)) / speedx;
-            yr = y + speedy * tr;
-            if(yr+radius>H-(H-L)/2){
-                return new EventType(((H-(H-L)/2)-(y+radius))/speedy,this, WallCollisionType.VERTICAL_COLLISION);
-            }
-            if(yr - radius < (H-L)/2){
-                return new EventType(((H-L)/2-(y-radius))/speedy,this, WallCollisionType.VERTICAL_COLLISION);
-            }
-        }
-        //El max no es un typo. Es para diferenciar por el signo de speedy. Unos va a ser + y el otro negativo segun la direccion vertical
-        return new EventType(Math.min(-(x-radius)/speedx,Math.max(H-(y+radius)/speedy,radius-y/speedy)), this, WallCollisionType.HORIZONTAL_COLLISION) ;
-        // TODO puse Horizontal Collision pero realmente no entiendo este choclo, hablar con @AlekDG
     }
 
 

@@ -47,7 +47,7 @@ public class EventType implements Comparable<EventType> {
             double deltaV_deltaR = deltaVX * deltaX + deltaVY * deltaY;
             double sigma = p1.getRadius() + p2.getRadius();
 
-            double J = deltaV_deltaR / sigma; // since mi and mj are 1, I can simply some things of the formula
+            double J = deltaV_deltaR / sigma; // since mi and mj are 1, I can simplify some things of the formula
 
             double Jx = J * deltaX / sigma;
             double Jy = J * deltaY / sigma;
