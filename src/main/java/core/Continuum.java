@@ -7,7 +7,6 @@ import java.util.Set;
 
 public class Continuum implements Iterable<Time> {
     private final double sqSize;
-    private final double L;
     private double epoch;
     private final int maxEpoch;
     private final List<Particle> particles;
@@ -21,8 +20,9 @@ public class Continuum implements Iterable<Time> {
     public Continuum(double sqSize, double L, int particleCount, int maxEpoch, double fixedParticleRadius) {
         if (sqSize <= 0 || L <= 0 || maxEpoch <= 0)
             throw new IllegalArgumentException("rectSize, L, maxEpoch must be positive");
+        if (L > sqSize)
+            throw new IllegalArgumentException("L cannot be greater than sqSize");
         this.sqSize = sqSize;
-        this.L = L;
         epoch = 0;
         this.maxEpoch = maxEpoch;
         this.particles = new ArrayList<>();
@@ -34,7 +34,6 @@ public class Continuum implements Iterable<Time> {
         double halfL = L / 2;
         this.rectUpperWall = halfSqHeight + halfL;
         this.rectLowerWall = halfSqHeight - halfL;
-
     }
 
     public void addParticle(Particle particle) {
@@ -94,7 +93,7 @@ public class Continuum implements Iterable<Time> {
     }
 
     private void findParticleEvent(Particle particle) {
-        EventType closestEvent = getNextWallCollision(particle);
+        EventType closestEvent = getNextWallCollision(particle, epoch);
         for (Particle particle2 : particles) {
             if (!particle2.equals(particle)) {
                 EventType ev = particle.estimateCollision(particle2);
@@ -109,58 +108,55 @@ public class Continuum implements Iterable<Time> {
         eventHandler.addEvent(closestEvent);
     }
 
-    private EventType getNextWallCollision(Particle particle) {
-        double x = particle.getX();
-        double y = particle.getY();
-        double radius = particle.getRadius();
-        double parLeftEdge = x - radius;
-        double parRightEdge = x + radius;
-        double parUpperEdge = y - radius;
-        double parLowerEdge = y + radius;
-        double speedx = particle.getSpeedX();
-        double speedy = particle.getSpeedY();
+    private EventType getNextWallCollision(Particle p, double iniTime) {
+        EventType horCollision = getNextHorCollision(p, iniTime);
+        EventType verCollision = getNextVerCollision(p, iniTime);
+        return horCollision.compareTo(verCollision) < 0 ? horCollision : verCollision;
+    }
 
-        double tr,yr;
-        if(speedx > 0){
-            if(x < sqSize) {
-                tr = (sqSize - (parRightEdge)) / speedx;
-                yr = y + speedy * tr;
-                if (yr + radius > sqSize) {
-                    return new EventType((sqSize - parUpperEdge) / speedy, particle, WallCollisionType.VERTICAL_COLLISION); //Colli Vert en t=(H-(y+r))/speedy
-                } else if (yr - radius < 0) {
-                    return new EventType(-parLowerEdge / speedy, particle, WallCollisionType.VERTICAL_COLLISION); //Colli Vert en t=-(y-r)/speedy
-                } else if ((parUpperEdge > rectUpperWall) || parLowerEdge < rectLowerWall) {
-                    return new EventType(tr, particle, WallCollisionType.HORIZONTAL_COLLISION);//Collision Horizontal en tr
-                }
-            }
-            tr = (rectRightWall - parRightEdge) / speedx;
-            yr = y + speedy * tr;
-            if (yr - radius < rectLowerWall) {
-                return new EventType((rectLowerWall - parLowerEdge) / speedy, particle, WallCollisionType.VERTICAL_COLLISION);
-            } else if (yr + radius > rectUpperWall) {
-                return new EventType((rectUpperWall - parUpperEdge) / speedy, particle, WallCollisionType.VERTICAL_COLLISION);
-            }
-            return new EventType(tr, particle, WallCollisionType.HORIZONTAL_COLLISION);
+
+    private EventType getNextHorCollision(Particle p, double iniTime) {
+        double parRightEdge = p.getX() + particleRadius;
+        double speedX = p.getSpeedX();
+        if (Double.compare(speedX, 0) == 0) {
+            return new EventType(Double.MAX_VALUE, p, WallCollisionType.HORIZONTAL_COLLISION);
         }
-        if(x > sqSize){
-            tr = (sqSize - parLeftEdge) / speedx;
-            yr = y + speedy * tr;
-            if(yr + radius > rectUpperWall){
-                return new EventType((rectUpperWall - parUpperEdge) / speedy, particle, WallCollisionType.VERTICAL_COLLISION);
-            }
-            if(yr - radius < rectLowerWall){
-                return new EventType((rectLowerWall - parLowerEdge) / speedy, particle, WallCollisionType.VERTICAL_COLLISION);
+
+        if (speedX < 0) {
+            double t = ParticleURM.LEFT.calcTime(p, iniTime, 0);
+            return new EventType(t, p, WallCollisionType.HORIZONTAL_COLLISION);
+        }
+        if(parRightEdge < sqSize) {
+            double t = ParticleURM.RIGHT.calcTime(p, iniTime, sqSize);
+            double yCenterAtT = p.getY() + p.getSpeedY() * (t - iniTime);
+            if(yCenterAtT - particleRadius < rectLowerWall || yCenterAtT + particleRadius >= rectUpperWall){
+                return new EventType(t, p, WallCollisionType.HORIZONTAL_COLLISION);
             }
         }
-        double tx = -parLeftEdge / speedx;
-        double ty;
-        if(speedy < 0)
-            ty = -parLowerEdge / speedy;
-        else
-            ty = sqSize - parUpperEdge/speedy;
-        if (tx < ty)
-            return new EventType(tx, particle, WallCollisionType.HORIZONTAL_COLLISION);
-        else
-            return new EventType(ty, particle, WallCollisionType.VERTICAL_COLLISION);
+        double t = ParticleURM.RIGHT.calcTime(p, iniTime, rectRightWall);
+        return new EventType(t, p, WallCollisionType.HORIZONTAL_COLLISION);
+    }
+
+    private EventType getNextVerCollision(Particle p, double iniTime) {
+        double parRightEdge = p.getX() + particleRadius;
+        double speedY = p.getSpeedY();
+        if (Double.compare(speedY, 0) == 0) {
+            return new EventType(Double.MAX_VALUE, p, WallCollisionType.VERTICAL_COLLISION);
+        }
+
+        if (parRightEdge < sqSize) {
+            if (speedY < 0) {
+                double t = ParticleURM.DOWN.calcTime(p, iniTime, 0);
+                return new EventType(t, p, WallCollisionType.VERTICAL_COLLISION);
+            }
+            double t = ParticleURM.UP.calcTime(p, iniTime, sqSize);
+            return new EventType(t, p, WallCollisionType.VERTICAL_COLLISION);
+        }
+        if (speedY < 0) {
+            double t = ParticleURM.DOWN.calcTime(p, iniTime, rectLowerWall);
+            return new EventType(t, p, WallCollisionType.VERTICAL_COLLISION);
+        }
+        double t = ParticleURM.UP.calcTime(p, iniTime, rectUpperWall);
+        return new EventType(t, p, WallCollisionType.VERTICAL_COLLISION);
     }
 }
