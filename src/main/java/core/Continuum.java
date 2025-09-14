@@ -101,7 +101,7 @@ public class Continuum implements Iterable<Time> {
         for (Particle particle2 : particles) {
             if (!particle2.equals(particle)) {
                 EventType ev = particle.getCollisionWithParticle(particle2, epoch);
-                if (ev != null && ev.compareTo(closestEvent) < 0) {
+                if (ev.compareTo(closestEvent) < 0) {
                     closestEvent = ev;
                 }
             }
