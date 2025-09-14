@@ -28,8 +28,8 @@ public class Particle {
     }
 
     public void move(double t) {
-        x = x + speedx*t;
-        y = y + speedy*t;
+        x = x + speedx * t;
+        y = y + speedy * t;
     }
 
     public void updateSpeedX(double speedX) {
@@ -45,16 +45,16 @@ public class Particle {
     }
 
     public EventType estimateCollision(Particle p) {
-        double[] dr = {x-p.x,y-p.y};
-        double[] dv = {speedx-p.speedx,speedy-p.speedy};
-        double delta = dotProd(dv,dr);
+        double[] dr = {x - p.x, y - p.y};
+        double[] dv = {speedx - p.speedx, speedy - p.speedy};
+        double delta = dotProd(dv, dr);
         if(delta >= 0)
             return null;
-        double deltaV = dotProd(dv,dv);
-        double d = Math.pow(delta,2) - deltaV*(dotProd(dr,dr)-Math.pow(radius+p.radius,2));
-        if(d<0)
+        double deltaV = dotProd(dv, dv);
+        double d = Math.pow(delta, 2) - deltaV * (dotProd(dr, dr) - Math.pow(radius + p.radius, 2));
+        if(d < 0)
             return null;
-        double t = - (delta+Math.sqrt(d))/deltaV;
+        double t = -(delta + Math.sqrt(d)) / deltaV;
         return new EventType(t,this,p);
     }
 

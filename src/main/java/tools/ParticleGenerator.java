@@ -27,7 +27,7 @@ public class ParticleGenerator {
             int cj = (int) Math.floor(y / cellSize);
             Cell cell = new Cell(ci,cj);
             direction = random.nextDouble(-Math.PI, Math.PI);
-            while(grid.checkColision(x,y,cell)){
+            while(grid.checkCollision(x,y,cell)){
                 x = random.nextDouble() * (gridSize - 2 * radius) + radius;
                 y = random.nextDouble() * (gridSize - 2 * radius) + radius;
                 cell.setI((int) Math.floor(x / cellSize));
@@ -41,7 +41,6 @@ public class ParticleGenerator {
 
     private static class GeneratedGrid {
         private final double cellSize;
-        private final double particleRadius;
         private final Map<Cell, List<Particle>> grid;
         private final static int[][] directions = {
                 {1, 0},   // derecha
@@ -57,7 +56,6 @@ public class ParticleGenerator {
 
 
         public GeneratedGrid(double particleRadius) {
-            this.particleRadius = particleRadius;
             this.cellSize = 2 * particleRadius;
             this.grid = new HashMap<>();
         }
@@ -66,7 +64,7 @@ public class ParticleGenerator {
             grid.computeIfAbsent(cell, k -> new ArrayList<>()).add(particle);
         }
 
-        public boolean checkColision(double x, double y, Cell cell) {
+        public boolean checkCollision(double x, double y, Cell cell) {
             for(int[] direction : directions){
                 Cell neighborCell = new Cell(cell.i + direction[0], cell.j + direction[1]);
                 List<Particle> particles = grid.get(neighborCell);

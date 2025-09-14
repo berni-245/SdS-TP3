@@ -50,31 +50,12 @@ public class Continuum implements Iterable<Time> {
         particles.add(particle);
     }
 
-    public List<Particle> getParticles() {
-        return particles;
-    }
-
-    private void findParticleEvent(Particle particle) {
-        EventType ec = null;
-        EventType wc = getNextWallCollision(particle);
-        for (Particle particle2 : particles) {
-            if (!particle2.equals(particle)) {
-                EventType ev = particle.estimateCollision(particle2);
-                if (ev != null) {
-                    if (ec == null || ec.compareTo(ev) > 0) {
-                        ec = ev;
-                    }
-                }
-            }
-        }
-        if (ec != null)
-            eventHandler.addEvent(ec.compareTo(wc) > 0 ? wc : ec);
-        else
-            eventHandler.addEvent(wc);
+    @Override
+    public Iterator<Time> iterator() {
+        return new TimeIterator();
     }
 
     private class TimeIterator implements Iterator<Time> {
-
         public TimeIterator() {
             for (Particle particle : particles) {
                 findParticleEvent(particle);
@@ -109,58 +90,75 @@ public class Continuum implements Iterable<Time> {
             return new Time(epoch, particles);
         }
 
+
     }
-    @Override
-    public Iterator<Time> iterator() {
-        return new TimeIterator();
+
+    private void findParticleEvent(Particle particle) {
+        EventType closestEvent = getNextWallCollision(particle);
+        for (Particle particle2 : particles) {
+            if (!particle2.equals(particle)) {
+                EventType ev = particle.estimateCollision(particle2);
+                if (ev != null) {
+                    if (ev.compareTo(closestEvent) < 0) {
+                        closestEvent = ev;
+                    }
+                }
+            }
+        }
+
+        eventHandler.addEvent(closestEvent);
     }
 
     private EventType getNextWallCollision(Particle particle) {
         double x = particle.getX();
         double y = particle.getY();
+        double radius = particle.getRadius();
+        double parLeftEdge = x - radius;
+        double parRightEdge = x + radius;
+        double parUpperEdge = y - radius;
+        double parLowerEdge = y + radius;
         double speedx = particle.getSpeedX();
         double speedy = particle.getSpeedY();
-        double radius = particle.getRadius();
 
         double tr,yr;
         if(speedx > 0){
             if(x < sqSize) {
-                tr = (sqSize - (x + radius)) / speedx;
+                tr = (sqSize - (parRightEdge)) / speedx;
                 yr = y + speedy * tr;
                 if (yr + radius > sqSize) {
-                    return new EventType((sqSize - (y + radius)) / speedy, particle, WallCollisionType.VERTICAL_COLLISION); //Colli Vert en t=(H-(y+r))/speedy
+                    return new EventType((sqSize - parUpperEdge) / speedy, particle, WallCollisionType.VERTICAL_COLLISION); //Colli Vert en t=(H-(y+r))/speedy
                 } else if (yr - radius < 0) {
-                    return new EventType(-(y - radius) / speedy, particle, WallCollisionType.VERTICAL_COLLISION); //Colli Vert en t=-(y-r)/speedy
-                } else if ((y + radius > sqSize - ((sqSize - L) / 2)) || y - radius < (sqSize - L) / 2) {
+                    return new EventType(-parLowerEdge / speedy, particle, WallCollisionType.VERTICAL_COLLISION); //Colli Vert en t=-(y-r)/speedy
+                } else if ((parUpperEdge > rectUpperWall) || parLowerEdge < rectLowerWall) {
                     return new EventType(tr, particle, WallCollisionType.HORIZONTAL_COLLISION);//Collision Horizontal en tr
                 }
             }
-            tr = (rectRightWall - (x + radius)) / speedx;
+            tr = (rectRightWall - parRightEdge) / speedx;
             yr = y + speedy * tr;
-            if (yr - radius < (sqSize - L) / 2) {
-                return new EventType(((sqSize - L) / 2 - (y - radius)) / speedy, particle, WallCollisionType.VERTICAL_COLLISION);
-            } else if (yr + radius > sqSize - (sqSize - L) / 2) {
-                return new EventType((sqSize - (sqSize - L) / 2 - (y + radius)) / speedy, particle, WallCollisionType.VERTICAL_COLLISION);
+            if (yr - radius < rectLowerWall) {
+                return new EventType((rectLowerWall - parLowerEdge) / speedy, particle, WallCollisionType.VERTICAL_COLLISION);
+            } else if (yr + radius > rectUpperWall) {
+                return new EventType((rectUpperWall - parUpperEdge) / speedy, particle, WallCollisionType.VERTICAL_COLLISION);
             }
             return new EventType(tr, particle, WallCollisionType.HORIZONTAL_COLLISION);
         }
         if(x > sqSize){
-            tr = (sqSize - (x-radius)) / speedx;
+            tr = (sqSize - parLeftEdge) / speedx;
             yr = y + speedy * tr;
-            if(yr+radius>sqSize-(sqSize-L)/2){
-                return new EventType(((sqSize-(sqSize-L)/2)-(y+radius))/speedy,particle, WallCollisionType.VERTICAL_COLLISION);
+            if(yr + radius > rectUpperWall){
+                return new EventType((rectUpperWall - parUpperEdge) / speedy, particle, WallCollisionType.VERTICAL_COLLISION);
             }
-            if(yr - radius < (sqSize-L)/2){
-                return new EventType(((sqSize-L)/2-(y-radius))/speedy,particle, WallCollisionType.VERTICAL_COLLISION);
+            if(yr - radius < rectLowerWall){
+                return new EventType((rectLowerWall - parLowerEdge) / speedy, particle, WallCollisionType.VERTICAL_COLLISION);
             }
         }
-        double tx = -(x-radius)/speedx;
-        double ty = 0;
-        if(speedy<0)
-            ty = radius-y/speedy;
+        double tx = -parLeftEdge / speedx;
+        double ty;
+        if(speedy < 0)
+            ty = -parLowerEdge / speedy;
         else
-            ty = sqSize-(y+radius)/speedy;
-        if (tx<ty)
+            ty = sqSize - parUpperEdge/speedy;
+        if (tx < ty)
             return new EventType(tx, particle, WallCollisionType.HORIZONTAL_COLLISION);
         else
             return new EventType(ty, particle, WallCollisionType.VERTICAL_COLLISION);
