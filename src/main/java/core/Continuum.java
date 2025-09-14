@@ -100,13 +100,12 @@ public class Continuum implements Iterable<Time> {
         EventType closestEvent = getNextWallCollision(particle, epoch);
         for (Particle particle2 : particles) {
             if (!particle2.equals(particle)) {
-                EventType ev = particle.estimateCollision(particle2);
+                EventType ev = particle.getCollisionWithParticle(particle2, epoch);
                 if (ev != null && ev.compareTo(closestEvent) < 0) {
                     closestEvent = ev;
                 }
             }
         }
-
         eventHandler.addEvent(closestEvent);
     }
 

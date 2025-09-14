@@ -16,17 +16,6 @@ public class Particle {
         this.radius = radius;
     }
 
-    public double getDistance(Particle p) {
-        return Math.sqrt(
-                Math.pow(
-                        p.x - x, 2
-                ) +
-                Math.pow(
-                        p.y - y, 2
-                )
-        ) - radius - p.radius;
-    }
-
     public void move(double deltaT) {
         x = x + speedx * deltaT;
         y = y + speedy * deltaT;
@@ -44,20 +33,19 @@ public class Particle {
         return v1[0] * v2[0] + v1[1] * v2[1];
     }
 
-    public EventType estimateCollision(Particle p) {
+    public EventType getCollisionWithParticle(Particle p, double iniTime) {
         double[] dr = {x - p.x, y - p.y};
         double[] dv = {speedx - p.speedx, speedy - p.speedy};
         double delta = dotProd(dv, dr);
         if(delta >= 0)
-            return null;
+            return new EventType(Double.MAX_VALUE, this, p);
         double deltaV = dotProd(dv, dv);
         double d = Math.pow(delta, 2) - deltaV * (dotProd(dr, dr) - Math.pow(radius + p.radius, 2));
         if(d < 0)
-            return null;
-        double t = -(delta + Math.sqrt(d)) / deltaV;
-        return new EventType(t,this,p);
+            return new EventType(Double.MAX_VALUE, this, p);
+        double t = -(delta + Math.sqrt(d)) / deltaV + iniTime;
+        return new EventType(t,this, p);
     }
-
 
     public double getSpeedX() {
         return speedx;
