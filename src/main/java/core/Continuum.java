@@ -39,11 +39,15 @@ public class Continuum implements Iterable<Time> {
     public void addParticle(Particle particle) {
         double parX = particle.getX();
         double parY = particle.getY();
+        double parRightEdge = parX + particleRadius;
+        double parLeftEdge = parX - particleRadius;
+        double parUpEdge = parY + particleRadius;
+        double parDownEdge = parY - particleRadius;
 
-        if (parX >= rectRightWall || parX < 0 || parY >= sqSize || parY < 0)
+        if (parRightEdge >= rectRightWall || parLeftEdge < 0 || parUpEdge >= sqSize || parDownEdge < 0)
             throw new IndexOutOfBoundsException("The particle doesn't fit on the space");
 
-        if (parX >= sqSize && (parY >= rectUpperWall || parY < rectLowerWall))
+        if (parRightEdge >= sqSize && (parUpEdge >= rectUpperWall || parDownEdge < rectLowerWall))
             throw new IndexOutOfBoundsException("The particle doesn't fit on the space");
 
         particles.add(particle);
@@ -69,9 +73,9 @@ public class Continuum implements Iterable<Time> {
         @Override
         public Time next() {
             EventType event = eventHandler.getNextValidEvent();
-            double eventTime = event.getT();
+            double deltaT = event.getT() - epoch;
             for (Particle particle : particles) {
-                particle.move(eventTime);
+                particle.move(deltaT);
             }
             event.performEvent();
 
@@ -97,10 +101,8 @@ public class Continuum implements Iterable<Time> {
         for (Particle particle2 : particles) {
             if (!particle2.equals(particle)) {
                 EventType ev = particle.estimateCollision(particle2);
-                if (ev != null) {
-                    if (ev.compareTo(closestEvent) < 0) {
-                        closestEvent = ev;
-                    }
+                if (ev != null && ev.compareTo(closestEvent) < 0) {
+                    closestEvent = ev;
                 }
             }
         }

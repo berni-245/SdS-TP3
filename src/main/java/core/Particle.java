@@ -27,9 +27,9 @@ public class Particle {
         ) - radius - p.radius;
     }
 
-    public void move(double t) {
-        x = x + speedx * t;
-        y = y + speedy * t;
+    public void move(double deltaT) {
+        x = x + speedx * deltaT;
+        y = y + speedy * deltaT;
     }
 
     public void updateSpeedX(double speedX) {
