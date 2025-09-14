@@ -78,6 +78,7 @@ public class Continuum implements Iterable<Time> {
                 particle.move(deltaT);
             }
             event.performEvent();
+            epoch = event.getT();
 
             Set<Particle> mustRevalidate;
             if (event.hasP2()) {
@@ -89,7 +90,6 @@ public class Continuum implements Iterable<Time> {
                 findParticleEvent(event.getP1());
             }
             mustRevalidate.forEach(Continuum.this::findParticleEvent);
-            epoch = event.getT();
             return new Time(epoch, particles);
         }
 
