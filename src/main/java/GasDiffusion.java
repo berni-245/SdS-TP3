@@ -3,6 +3,7 @@ import tools.ParticleGenerator;
 import tools.PostProcessor;
 
 import java.io.IOException;
+import java.util.Locale;
 
 public class GasDiffusion {
     private final static String N = "N";
@@ -22,6 +23,7 @@ public class GasDiffusion {
 
         Continuum continuum = new Continuum(side, l, n, epoch, particleRadius);
         ParticleGenerator.generate(n, side , continuum::addParticle, speed, particleRadius);
+        Locale.setDefault(Locale.ENGLISH);
         long init = System.currentTimeMillis();
         try (PostProcessor postProcessor = new PostProcessor(outputFile)) {
             continuum.iterator().forEachRemaining(postProcessor::processEpoch);
