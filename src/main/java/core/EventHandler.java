@@ -38,16 +38,12 @@ public class EventHandler {
         particleEvents.get(particle.getId() - 1).forEach(event -> {
             if(event.isValid()){
                 event.invalidate();
-                if(!event.getP1().equals(particle)){
+                if(!event.getP1().equals(particle))
                     invalidatedParticles.add(event.getP1());
-                    invalidateParticleEvent(event.getP1());
-                }
-                if(event.hasP2() && !event.getP2().equals(particle)){
-                    invalidatedParticles.add(event.getP2());
-                    invalidateParticleEvent(event.getP2());
-                }
-            }
 
+                if(event.hasP2() && !event.getP2().equals(particle))
+                    invalidatedParticles.add(event.getP2());
+            }
         });
         return invalidatedParticles;
     }

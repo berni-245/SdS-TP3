@@ -75,7 +75,7 @@ async function generateVideo(inputPath, outputFile, videoWidth, videoHeight, vid
   const offsetY = (videoHeight - boardSize * scale) / 2;
 
   const mapX = (x) => offsetX + x * scale;
-  const mapY = (y) => offsetY + y * scale;
+  const mapY = (y) => offsetY + (boardSize - y) * scale;
   const mapR = (r) => r * scale;
   const mapRectHeight = (h) => h * scale;
 
@@ -105,7 +105,7 @@ async function generateVideo(inputPath, outputFile, videoWidth, videoHeight, vid
 
   for await (const [time, particles] of timestepIterator) {
     if (prevTime !== null) {
-      for (let t = prevTime; t < time; t += dt) {
+      for (let t = prevTime + dt; t < time; t += dt) {
         const alpha = t - prevTime;
         const interpParticles = prevParticles.map((p) => ({
           ...p,
@@ -146,10 +146,10 @@ function drawFrame(ctx, particles, boardSize, rectHeight, scale, offsetX, offset
   ctx.strokeRect(offsetX, offsetY, boardSize * scale, boardSize * scale);
 
   // Rectángulo SxL centrado verticalmente y a la derecha del cuadrado
-  ctx.strokeStyle = "yellow";
+  ctx.strokeStyle = "white";
   ctx.lineWidth = 2;
   const rectX = offsetX + boardSize * scale; // justo a la derecha del cuadrado
-  const rectY = offsetY + (boardSize - rectHeight) * scale / 2; // centrado vertical
+  const rectY = offsetY + (boardSize - rectHeight) * scale / 2;
   ctx.strokeRect(rectX, rectY, boardSize * scale, mapRectHeight(rectHeight));
 
 
@@ -181,7 +181,7 @@ function drawFrame(ctx, particles, boardSize, rectHeight, scale, offsetX, offset
     ctx.fillStyle = "black";
     const fontSize = Math.max(r * 1.5, 8);
     ctx.font = `${fontSize}px sans-serif`;
-    ctx.fillText(String(i), cx, cy);
+    ctx.fillText(String(i + 1), cx, cy);
   });
 }
 
