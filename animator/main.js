@@ -5,29 +5,24 @@ import { spawn } from "child_process";
 import { Command, InvalidArgumentError } from "commander";
 
 const program = new Command();
-
 program
     .name("particle-video")
     .description("Render particle simulation files into mp4 videos")
     .argument("<inputs...>", "input simulation files")
     .requiredOption(
-        "-S, --board-size <numbers...>",
-        "board size(s), one per input or a single value for all",
-        parsePositiveArray
-    )
-    .requiredOption(
         "-L, --rect-height <numbers...>",
         "rectangle height(s), one per input or a single value for all",
         parsePositiveArray
     )
-    .option("--video-fps <int>", "frames per second", parsePositiveInt, 24);
+    .option("--video-fps <int>", "frames per second", parsePositiveInt, 24)
+    .option("--interpolate", "Disable frame interpolation", false);
 
 async function main() {
   program.parse();
   const opts = program.opts();
   const inputs = program.args;
-
-  opts.boardSize = normalizePerInput(opts.boardSize, inputs);
+  const fixedBoardSize = 0.09;
+  opts.boardSize = Array(inputs.length).fill(fixedBoardSize);
   opts.rectHeight = normalizePerInput(opts.rectHeight, inputs);
 
   for (let i = 0; i < inputs.length; ++i) {
@@ -36,7 +31,6 @@ async function main() {
             .split("/")
             .at(-1)
             .replace(/\.\w+$/, "") + ".mp4";
-
     await generateVideo(
         inputs[i],
         output,
@@ -44,9 +38,9 @@ async function main() {
         500,
         opts.videoFps,
         opts.boardSize[i],
-        opts.rectHeight[i]
+        opts.rectHeight[i],
+        opts.interpolate // Pasa el flag de interpolación
     );
-
     console.log(`Video saved as ${output}`);
   }
 }
@@ -60,23 +54,22 @@ function writeFrame(stream, buffer) {
   });
 }
 
-async function generateVideo(inputPath, outputFile, videoWidth, videoHeight, videoFps, boardSize, rectHeight, marginPx = 20) {
+async function generateVideo(inputPath, outputFile, videoWidth, videoHeight, videoFps, boardSize, rectHeight, shouldInterpolate, marginPx = 20) {
   const timestepIterator = parseTextStream(inputPath);
-
   const canvas = createCanvas(videoWidth, videoHeight);
   const ctx = canvas.getContext("2d");
 
-  // --- Compute scaling and offsets ---
+  // --- Compute scaling and offsets (ONCE) ---
   const availableSize = Math.min(videoWidth, videoHeight) - 2 * marginPx;
   const scale = availableSize / boardSize;
   const offsetX = videoWidth / 2 - boardSize * scale;
   const offsetY = (videoHeight - boardSize * scale) / 2;
-
   const mapX = (x) => offsetX + x * scale;
   const mapY = (y) => offsetY + (boardSize - y) * scale;
   const mapR = (r) => r * scale;
   const mapRectHeight = (h) => h * scale;
 
+  // --- FFmpeg setup ---
   const ffmpeg = spawn("ffmpeg", [
     "-y",
     "-f", "rawvideo",
@@ -90,94 +83,117 @@ async function generateVideo(inputPath, outputFile, videoWidth, videoHeight, vid
     "-pix_fmt", "yuv420p",
     outputFile,
   ]);
-
   ffmpeg.stderr.on("data", (data) => {
     console.error("ffmpeg:", data.toString());
   });
 
   const dt = 1 / videoFps;
-
   let prevTime = null;
   let prevParticles = null;
   let collisionCount = 0;
+  const rgbaBuffer = Buffer.alloc(videoWidth * videoHeight * 4);
 
   for await (const [time, particles] of timestepIterator) {
     if (prevTime !== null) {
-      for (let t = prevTime + dt; t < time; t += dt) {
-        const alpha = t - prevTime;
-        const interpParticles = prevParticles.map((p) => ({
-          ...p,
-          x: p.x + p.vx * alpha,
-          y: p.y + p.vy * alpha,
-        }));
-        drawFrame(ctx, interpParticles, boardSize, rectHeight, scale, offsetX, offsetY, mapX, mapY, mapR, mapRectHeight, collisionCount);
-        const rgba = ctx.getImageData(0, 0, videoWidth, videoHeight).data;
-        await writeFrame(ffmpeg.stdin, Buffer.from(rgba));
+      if (shouldInterpolate) {
+        // --- Interpolación (opcional) ---
+        for (let t = prevTime + dt; t < time; t += dt) {
+          const alpha = (t - prevTime) / (time - prevTime);
+          const interpParticles = prevParticles.map((p) => ({
+            ...p,
+            x: p.x + p.vx * alpha * (time - prevTime),
+            y: p.y + p.vy * alpha * (time - prevTime),
+          }));
+          ctx.fillStyle = "white";
+          ctx.fillRect(0, 0, videoWidth, videoHeight);
+          // --- Redibujar bordes estáticos ---
+          drawStaticBorders(ctx, offsetX, offsetY, boardSize, rectHeight, scale, mapRectHeight);
+          // --- Dibujar partículas y contador ---
+          drawParticlesAndCounter(ctx, interpParticles, mapX, mapY, mapR, collisionCount);
+          // --- Enviar frame ---
+          const rgba = ctx.getImageData(0, 0, videoWidth, videoHeight).data;
+          rgba.forEach((val, i) => rgbaBuffer[i] = val);
+          await writeFrame(ffmpeg.stdin, rgbaBuffer);
+        }
       }
-
       collisionCount++;
-      drawFrame(ctx, particles, boardSize, rectHeight, scale, offsetX, offsetY, mapX, mapY, mapR, mapRectHeight, collisionCount);
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, videoWidth, videoHeight);
+      // --- Redibujar bordes estáticos ---
+      drawStaticBorders(ctx, offsetX, offsetY, boardSize, rectHeight, scale, mapRectHeight);
+      // --- Dibujar partículas y contador ---
+      drawParticlesAndCounter(ctx, particles, mapX, mapY, mapR, collisionCount);
+      // --- Enviar frame ---
       const rgba = ctx.getImageData(0, 0, videoWidth, videoHeight).data;
-      await writeFrame(ffmpeg.stdin, Buffer.from(rgba));
+      rgba.forEach((val, i) => rgbaBuffer[i] = val);
+      await writeFrame(ffmpeg.stdin, rgbaBuffer);
     } else {
-      drawFrame(ctx, particles, boardSize, rectHeight, scale, offsetX, offsetY, mapX, mapY, mapR, mapRectHeight, null);
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, videoWidth, videoHeight);
+      // --- Redibujar bordes estáticos ---
+      drawStaticBorders(ctx, offsetX, offsetY, boardSize, rectHeight, scale, mapRectHeight);
+      // --- Dibujar partículas y contador ---
+      drawParticlesAndCounter(ctx, particles, mapX, mapY, mapR, null);
+      // --- Enviar frame ---
       const rgba = ctx.getImageData(0, 0, videoWidth, videoHeight).data;
-      await writeFrame(ffmpeg.stdin, Buffer.from(rgba));
+      rgba.forEach((val, i) => rgbaBuffer[i] = val);
+      await writeFrame(ffmpeg.stdin, rgbaBuffer);
     }
-
     prevTime = time;
     prevParticles = particles;
   }
-
   ffmpeg.stdin.end();
   await new Promise((resolve) => ffmpeg.on("close", resolve));
 }
 
-function drawFrame(ctx, particles, boardSize, rectHeight, scale, offsetX, offsetY, mapX, mapY, mapR, mapRectHeight, collisionCount = null) {
-  // Fondo blanco
-  ctx.fillStyle = "white";
-  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
+function drawStaticBorders(ctx, offsetX, offsetY, boardSize, rectHeight, scale, mapRectHeight) {
   ctx.lineWidth = 2;
   ctx.strokeStyle = "black";
-
   // --- Cuadrado SxS (sin lado derecho) ---
   const squareX = offsetX;
   const squareY = offsetY;
   const squareSize = boardSize * scale;
-
   ctx.beginPath();
-  ctx.moveTo(squareX, squareY);                       // arriba izq
-  ctx.lineTo(squareX + squareSize, squareY);          // arriba der
-  ctx.moveTo(squareX, squareY);                       // arriba izq
-  ctx.lineTo(squareX, squareY + squareSize);          // abajo izq
-  ctx.moveTo(squareX, squareY + squareSize);          // abajo izq
-  ctx.lineTo(squareX + squareSize, squareY + squareSize); // abajo der
+  ctx.moveTo(squareX, squareY);
+  ctx.lineTo(squareX + squareSize, squareY);
+  ctx.moveTo(squareX, squareY);
+  ctx.lineTo(squareX, squareY + squareSize);
+  ctx.moveTo(squareX, squareY + squareSize);
+  ctx.lineTo(squareX + squareSize, squareY + squareSize);
   ctx.stroke();
-
   // --- Rectángulo SxL (sin lado izquierdo) ---
   const rectX = squareX + squareSize;
   const rectY = offsetY + (boardSize - rectHeight) * scale / 2;
   const rectW = squareSize;
   const rectH = mapRectHeight(rectHeight);
-
   ctx.beginPath();
-  ctx.moveTo(rectX + rectW, rectY);                   // arriba der
-  ctx.lineTo(rectX, rectY);                           // arriba izq
-  ctx.moveTo(rectX + rectW, rectY);                   // arriba der
-  ctx.lineTo(rectX + rectW, rectY + rectH);           // abajo der
-  ctx.moveTo(rectX + rectW, rectY + rectH);           // abajo der
-  ctx.lineTo(rectX, rectY + rectH);                   // abajo izq
+  ctx.moveTo(rectX + rectW, rectY);
+  ctx.lineTo(rectX, rectY);
+  ctx.moveTo(rectX + rectW, rectY);
+  ctx.lineTo(rectX + rectW, rectY + rectH);
+  ctx.moveTo(rectX + rectW, rectY + rectH);
+  ctx.lineTo(rectX, rectY + rectH);
   ctx.stroke();
-
   // --- Líneas de unión arriba y abajo ---
   ctx.beginPath();
-  ctx.moveTo(rectX, squareY);                     // borde superior cuadrado
-  ctx.lineTo(rectX, rectY);                       // inicio rectángulo arriba
-  ctx.moveTo(rectX, rectY + rectH);               // fin rectángulo abajo
-  ctx.lineTo(rectX, squareY + squareSize);        // borde inferior cuadrado
+  ctx.moveTo(rectX, squareY);
+  ctx.lineTo(rectX, rectY);
+  ctx.moveTo(rectX, rectY + rectH);
+  ctx.lineTo(rectX, squareY + squareSize);
   ctx.stroke();
+}
 
+function drawParticlesAndCounter(ctx, particles, mapX, mapY, mapR, collisionCount) {
+  // --- Partículas ---
+  particles.forEach((p) => {
+    const cx = mapX(p.x);
+    const cy = mapY(p.y);
+    const r = mapR(p.r);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+    ctx.fillStyle = "black";
+    ctx.fill();
+  });
   // --- Contador de colisiones ---
   if (collisionCount !== null) {
     ctx.fillStyle = "black";
@@ -186,34 +202,17 @@ function drawFrame(ctx, particles, boardSize, rectHeight, scale, offsetX, offset
     ctx.textBaseline = "top";
     ctx.fillText(`#Events: ${collisionCount}`, 10, 10);
   }
-
-  // --- Partículas ---
-  particles.forEach((p, i) => {
-    const cx = mapX(p.x);
-    const cy = mapY(p.y);
-    const r = mapR(p.r);
-
-    // círculo negro
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, 2 * Math.PI);
-    ctx.fillStyle = "black";
-    ctx.fill();
-  });
 }
 
-
-// --- parseTextStream y helpers (igual que antes) ---
+// --- parseTextStream y helpers (sin cambios) ---
 async function* parseTextStream(path) {
   const fileStream = fs.createReadStream(path);
   const rl = readline.createInterface({ input: fileStream });
-
   let particles = [];
   let currentTime = null;
-
   for await (const line of rl) {
     const trimmed = line.trim();
     if (!trimmed) continue;
-
     if (/^\d+(\.\d+)?$/.test(trimmed)) {
       if (currentTime !== null) {
         yield [currentTime, particles];
@@ -225,7 +224,6 @@ async function* parseTextStream(path) {
       particles.push({ x, y, vx, vy, r });
     }
   }
-
   if (currentTime !== null && particles.length) {
     yield [currentTime, particles];
   }
