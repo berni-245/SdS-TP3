@@ -112,7 +112,10 @@ public class Continuum implements Iterable<Time> {
     private EventType getNextWallCollision(Particle p, double iniTime) {
         EventType horCollision = getNextHorCollision(p, iniTime);
         EventType verCollision = getNextVerCollision(p, iniTime);
-        return horCollision.compareTo(verCollision) < 0 ? horCollision : verCollision;
+        EventType cornerCollision = getNextCornerCollision(p, iniTime);
+
+        EventType toReturn = horCollision.compareTo(verCollision) < 0 ? horCollision : verCollision;
+        return toReturn.compareTo(cornerCollision) < 0 ? toReturn : cornerCollision;
     }
 
 
@@ -136,52 +139,6 @@ public class Continuum implements Iterable<Time> {
         }
         double t = ParticleURM.RIGHT.calcTime(p, iniTime, rectRightWall);
         return new EventType(t, p, WallCollisionType.HORIZONTAL_COLLISION);
-    }
-
-    private double getNextUpperCornerCollision(Particle p, double iniTime) {
-        //(x(t) - xCorner)^2 + (y(t) - yCorner)^2 = radius^2 -> busco este t (osea el t para que la circunferencia de la particula toque el borde)
-        double dx = p.getX() - sqSize;
-        double dy = p.getY() - rectUpperWall;
-        double a = Math.pow(p.getSpeedX(), 2) + Math.pow(p.getSpeedY(), 2);
-        double b = 2 * (dx * p.getX() + dy * p.getY());
-        double c = Math.pow(dx, 2) + Math.pow(dy, 2) - Math.pow(particleRadius, 2);
-
-        double disc = Math.sqrt(Math.pow(b, 2) - 4 * a * c);
-        if (Double.isNaN(disc)) {
-            return -1;
-        }
-        double t1 = (-b + disc) / (2 * a) + iniTime;
-        double t2 = (-b - disc) / (2 * a) + iniTime;
-
-        if (t1 > 0) {
-            if (t2 < 0) return t1;
-            return Math.min(t1, t2);
-        }
-        return t2;
-        // si el valor retornado es negativo -> no pasa el choque
-    }
-
-    private double getNextDownCornerCollision(Particle p, double iniTime) {
-        //(x(t) - xCorner)^2 + (y(t) - yCorner)^2 = radius^2 -> busco este t (osea el t para que la circunferencia de la particula toque el borde)
-        double dx = p.getX() - sqSize;
-        double dy = p.getY() - rectLowerWall;
-        double a = Math.pow(p.getSpeedX(), 2) + Math.pow(p.getSpeedY(), 2);
-        double b = 2 * (dx * p.getX() + dy * p.getY());
-        double c = Math.pow(dx, 2) + Math.pow(dy, 2) - Math.pow(particleRadius, 2);
-
-        double disc = Math.sqrt(Math.pow(b, 2) - 4 * a * c);
-        if (Double.isNaN(disc)) {
-            return -1;
-        }
-        double t1 = (-b + disc) / (2 * a) + iniTime;
-        double t2 = (-b - disc) / (2 * a) + iniTime;
-
-        if (t1 > 0) {
-            if (t2 < 0) return t1;
-            return Math.min(t1, t2);
-        }
-        return t2;
-        // si el valor retornado es negativo -> no pasa el choque
     }
 
     private EventType getNextVerCollision(Particle p, double iniTime) {
@@ -208,5 +165,38 @@ public class Continuum implements Iterable<Time> {
                 ParticleURM.UP.calcTime(p, iniTime, sqSize),
                 p, WallCollisionType.VERTICAL_COLLISION
         );
+    }
+
+    private EventType getNextCornerCollision(Particle p, double iniTime) {
+        double upperCornerCollision = calculateCornerCollision(p, iniTime, rectUpperWall);
+        double lowerCornerCollision = calculateCornerCollision(p, iniTime, rectLowerWall);
+        if (upperCornerCollision >= epoch && lowerCornerCollision < epoch)
+            return new EventType(upperCornerCollision, p, WallCollisionType.VERTICAL_COLLISION);
+        if (lowerCornerCollision >= epoch && upperCornerCollision < epoch)
+            return new EventType(lowerCornerCollision, p, WallCollisionType.VERTICAL_COLLISION);
+        if (upperCornerCollision < epoch && lowerCornerCollision < epoch)
+            return new EventType(Double.MAX_VALUE, p, WallCollisionType.VERTICAL_COLLISION);
+        return new EventType(Math.min(lowerCornerCollision, upperCornerCollision), p, WallCollisionType.VERTICAL_COLLISION);
+    }
+
+    private double calculateCornerCollision(Particle p, double iniTime, double rectWallPos) {
+        double dx = p.getX() - sqSize;
+        double dy = p.getY() - rectWallPos;
+        double a = Math.pow(p.getSpeedX(), 2) + Math.pow(p.getSpeedY(), 2);
+        double b = 2 * (dx * p.getSpeedX() + dy * p.getSpeedY());
+        double c = Math.pow(dx, 2) + Math.pow(dy, 2) - Math.pow(particleRadius, 2);
+
+        double disc = Math.sqrt(Math.pow(b, 2) - 4 * a * c);
+        if (Double.isNaN(disc)) {
+            return -1;
+        }
+        double t1 = (-b + disc) / (2 * a) + iniTime;
+        double t2 = (-b - disc) / (2 * a) + iniTime;
+
+        if (t1 > 0) {
+            if (t2 < 0) return t1;
+            return Math.min(t1, t2);
+        }
+        return t2;
     }
 }
