@@ -20,8 +20,6 @@ program
         "rectangle height(s), one per input or a single value for all",
         parsePositiveArray
     )
-    .option("--video-width <pixels>", "video width", parsePositiveInt, 500)
-    .option("--video-height <pixels>", "video height", parsePositiveInt, 500)
     .option("--video-fps <int>", "frames per second", parsePositiveInt, 24);
 
 async function main() {
@@ -42,8 +40,8 @@ async function main() {
     await generateVideo(
         inputs[i],
         output,
-        opts.videoWidth,
-        opts.videoHeight,
+        1200,
+        500,
         opts.videoFps,
         opts.boardSize[i],
         opts.rectHeight[i]
@@ -136,54 +134,73 @@ async function generateVideo(inputPath, outputFile, videoWidth, videoHeight, vid
 }
 
 function drawFrame(ctx, particles, boardSize, rectHeight, scale, offsetX, offsetY, mapX, mapY, mapR, mapRectHeight, collisionCount = null) {
-  // Background
-  ctx.fillStyle = "black";
+  // Fondo blanco
+  ctx.fillStyle = "white";
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-  // Cuadrado SxS
-  ctx.strokeStyle = "#FFFFFF";
   ctx.lineWidth = 2;
-  ctx.strokeRect(offsetX, offsetY, boardSize * scale, boardSize * scale);
+  ctx.strokeStyle = "black";
 
-  // Rectángulo SxL centrado verticalmente y a la derecha del cuadrado
-  ctx.strokeStyle = "white";
-  ctx.lineWidth = 2;
-  const rectX = offsetX + boardSize * scale; // justo a la derecha del cuadrado
+  // --- Cuadrado SxS (sin lado derecho) ---
+  const squareX = offsetX;
+  const squareY = offsetY;
+  const squareSize = boardSize * scale;
+
+  ctx.beginPath();
+  ctx.moveTo(squareX, squareY);                       // arriba izq
+  ctx.lineTo(squareX + squareSize, squareY);          // arriba der
+  ctx.moveTo(squareX, squareY);                       // arriba izq
+  ctx.lineTo(squareX, squareY + squareSize);          // abajo izq
+  ctx.moveTo(squareX, squareY + squareSize);          // abajo izq
+  ctx.lineTo(squareX + squareSize, squareY + squareSize); // abajo der
+  ctx.stroke();
+
+  // --- Rectángulo SxL (sin lado izquierdo) ---
+  const rectX = squareX + squareSize;
   const rectY = offsetY + (boardSize - rectHeight) * scale / 2;
-  ctx.strokeRect(rectX, rectY, boardSize * scale, mapRectHeight(rectHeight));
+  const rectW = squareSize;
+  const rectH = mapRectHeight(rectHeight);
 
+  ctx.beginPath();
+  ctx.moveTo(rectX + rectW, rectY);                   // arriba der
+  ctx.lineTo(rectX, rectY);                           // arriba izq
+  ctx.moveTo(rectX + rectW, rectY);                   // arriba der
+  ctx.lineTo(rectX + rectW, rectY + rectH);           // abajo der
+  ctx.moveTo(rectX + rectW, rectY + rectH);           // abajo der
+  ctx.lineTo(rectX, rectY + rectH);                   // abajo izq
+  ctx.stroke();
 
-  // Collision counter
+  // --- Líneas de unión arriba y abajo ---
+  ctx.beginPath();
+  ctx.moveTo(rectX, squareY);                     // borde superior cuadrado
+  ctx.lineTo(rectX, rectY);                       // inicio rectángulo arriba
+  ctx.moveTo(rectX, rectY + rectH);               // fin rectángulo abajo
+  ctx.lineTo(rectX, squareY + squareSize);        // borde inferior cuadrado
+  ctx.stroke();
+
+  // --- Contador de colisiones ---
   if (collisionCount !== null) {
-    ctx.fillStyle = "white";
+    ctx.fillStyle = "black";
     ctx.font = `20px sans-serif`;
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText(`Collisions: ${collisionCount}`, 10, 10);
+    ctx.fillText(`#Events: ${collisionCount}`, 10, 10);
   }
 
-  // Particles
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = "white";
-  ctx.font = `${12 * scale}px sans-serif`;
-
+  // --- Partículas ---
   particles.forEach((p, i) => {
     const cx = mapX(p.x);
     const cy = mapY(p.y);
     const r = mapR(p.r);
 
+    // círculo negro
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, 2 * Math.PI);
-    ctx.fillStyle = "white";
-    ctx.fill();
-
     ctx.fillStyle = "black";
-    const fontSize = Math.max(r * 1.5, 8);
-    ctx.font = `${fontSize}px sans-serif`;
-    ctx.fillText(String(i + 1), cx, cy);
+    ctx.fill();
   });
 }
+
 
 // --- parseTextStream y helpers (igual que antes) ---
 async function* parseTextStream(path) {
