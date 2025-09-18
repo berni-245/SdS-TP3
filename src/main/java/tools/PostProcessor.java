@@ -17,6 +17,18 @@ public class PostProcessor implements Closeable {
     private static final String OUTPUT_FILE_NAME = "dynamicOutput.txt";
     private final BufferedWriter writer;
 
+    static {
+        for (int wallId = 0; wallId <= 3; wallId++) {
+            Path path = Paths.get("impulse_" + wallId + ".csv");
+            try {
+                Files.write(path, new byte[0], StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            } catch (IOException e) {
+                System.err.println("Error clearing impulse file: " + path);
+            }
+        }
+    }
+
+
     public PostProcessor(String outputName) {
         try {
             if (outputName == null)
@@ -50,7 +62,7 @@ public class PostProcessor implements Closeable {
         //ID=0 for the normal square sides, ID=1 for the split right wall
         //ID=2 for the rectangle roof and floor, ID=3 for rectangle wall
         Path path = Paths.get("impulse_" + wallId + ".csv");
-        String entry = Double.toString(time) + "," + Double.toString(impulse) + ";";
+        String entry = time + "," + impulse + '\n';
 
         try {
             Files.write(path, entry.getBytes(StandardCharsets.UTF_8),
