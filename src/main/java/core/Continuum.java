@@ -199,4 +199,6 @@ public class Continuum implements Iterable<Time> {
         }
         return t2;
     }
+
+    public List<Particle> getParticles() { return particles; }
 }

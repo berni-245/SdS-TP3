@@ -1,4 +1,5 @@
 import core.Continuum;
+import core.Time;
 import tools.ParticleGenerator;
 import tools.PostProcessor;
 
@@ -26,6 +27,7 @@ public class GasDiffusion {
         Locale.setDefault(Locale.ENGLISH);
         long init = System.currentTimeMillis();
         try (PostProcessor postProcessor = new PostProcessor(outputFile)) {
+            postProcessor.processEpoch(new Time(0, continuum.getParticles()));
             continuum.iterator().forEachRemaining(postProcessor::processEpoch);
         } catch (IOException e) {
             throw new RuntimeException(e);
