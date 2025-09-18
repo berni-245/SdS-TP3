@@ -30,10 +30,11 @@ public class GasDiffusion {
             postProcessor.processEpoch(new Time(0, continuum.getParticles()));
             int i = 0;
             for(Time t : continuum){
-                if(i++%100 == 0)
+                if(i++%100 == 0) {
+                    System.out.printf("Epoch i=%f\n", t.time());
                     postProcessor.processEpoch(t);
+                }
             }
-            continuum.iterator().forEachRemaining(postProcessor::processEpoch);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

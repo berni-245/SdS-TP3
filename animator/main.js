@@ -116,7 +116,7 @@ async function generateVideo(inputPath, outputFile, videoWidth, videoHeight, vid
           await writeFrame(ffmpeg.stdin, rgbaBuffer);
         }
       }
-      collisionCount++;
+      collisionCount += 100;
       ctx.fillStyle = "white";
       ctx.fillRect(0, 0, videoWidth, videoHeight);
       // --- Redibujar bordes estáticos ---

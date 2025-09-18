@@ -142,13 +142,14 @@ public class Continuum implements Iterable<Time> {
     }
 
     private EventType getNextVerCollision(Particle p, double iniTime) {
+        double deltaT = 0.00001; // to ensure the event never happens at the same time
         double speedY = p.getSpeedY();
         if (Double.compare(speedY, 0) == 0) {
             return new EventType(Double.MAX_VALUE, p, WallCollisionType.VERTICAL_COLLISION);
         }
 
         if (speedY < 0) {
-            double tRectLowerWall = ParticleURM.DOWN.calcTime(p, iniTime, rectLowerWall);
+            double tRectLowerWall = ParticleURM.DOWN.calcTime(p, iniTime, rectLowerWall) + deltaT;
             double xCenterAtT = p.getX() + p.getSpeedX() * (tRectLowerWall - iniTime);
             if (tRectLowerWall >= epoch && xCenterAtT >= sqSize)
                 return new EventType(tRectLowerWall, p, WallCollisionType.VERTICAL_COLLISION);
@@ -157,7 +158,7 @@ public class Continuum implements Iterable<Time> {
                     p, WallCollisionType.VERTICAL_COLLISION
             );
         }
-        double tRectUpperWall = ParticleURM.UP.calcTime(p, iniTime, rectUpperWall);
+        double tRectUpperWall = ParticleURM.UP.calcTime(p, iniTime, rectUpperWall) + deltaT;
         double xCenterAtT = p.getX() + p.getSpeedX() * (tRectUpperWall - iniTime);
         if (tRectUpperWall >= epoch && xCenterAtT >= sqSize)
             return new EventType(tRectUpperWall, p, WallCollisionType.VERTICAL_COLLISION);
@@ -168,8 +169,9 @@ public class Continuum implements Iterable<Time> {
     }
 
     private EventType getNextCornerCollision(Particle p, double iniTime) {
-        double upperCornerCollision = calculateCornerCollision(p, iniTime, rectUpperWall);
-        double lowerCornerCollision = calculateCornerCollision(p, iniTime, rectLowerWall);
+        double deltaT = 0.00001; // to ensure the event never happens at the same time
+        double upperCornerCollision = calculateCornerCollision(p, iniTime, rectUpperWall) + deltaT;
+        double lowerCornerCollision = calculateCornerCollision(p, iniTime, rectLowerWall) + deltaT;
         if (upperCornerCollision >= epoch && lowerCornerCollision < epoch)
             return new EventType(upperCornerCollision, p, WallCollisionType.VERTICAL_COLLISION);
         if (lowerCornerCollision >= epoch && upperCornerCollision < epoch)
