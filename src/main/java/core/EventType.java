@@ -30,12 +30,12 @@ public class EventType implements Comparable<EventType> {
         isValid = true;
     }
 
-    public void performEvent() {
+    public void performEvent(double squareSize) {
         if (!isValid)
             throw new IllegalStateException("The event is no longer valid");
 
         if (wallCollisionType != null) { // wall collision
-            wallCollisionType.updateParticle(p1);
+            wallCollisionType.updateParticle(p1,squareSize,t);
             return;
         }
         if (p2 != null) { // particle collision

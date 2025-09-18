@@ -77,7 +77,7 @@ public class Continuum implements Iterable<Time> {
             for (Particle particle : particles) {
                 particle.move(deltaT);
             }
-            event.performEvent();
+            event.performEvent(sqSize);
             epoch = event.getT();
 
             Set<Particle> mustRevalidate;

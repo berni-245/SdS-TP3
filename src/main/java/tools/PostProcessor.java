@@ -7,6 +7,11 @@ import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 public class PostProcessor implements Closeable {
     private static final String OUTPUT_FILE_NAME = "dynamicOutput.txt";
@@ -38,6 +43,20 @@ public class PostProcessor implements Closeable {
             writer.newLine();
         } catch (IOException e) {
             throw new RuntimeException("Error writing on output file");
+        }
+    }
+
+    public static void processImpulse(double impulse, double time, int wallId) {
+        //ID=0 for the normal square sides, ID=1 for the split right wall
+        //ID=2 for the rectangle roof and floor, ID=3 for rectangle wall
+        Path path = Paths.get("impulse_" + wallId + ".csv");
+        String entry = Double.toString(time) + "," + Double.toString(impulse) + ";";
+
+        try {
+            Files.write(path, entry.getBytes(StandardCharsets.UTF_8),
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            System.err.println("Error writing impulse file");
         }
     }
 
