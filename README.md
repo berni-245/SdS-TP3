@@ -2,7 +2,7 @@
 
 ## 👋 Introducción
 
-Trabajo práctico para la materia de Simulación de Sistemas en el ITBA. // TODO
+Trabajo práctico para la materia de Simulación de Sistemas en el ITBA. Para choques de partículas en un recinto, simulando choques de partículas de gas.
 
 ### ❗ Requisitos
 
@@ -26,17 +26,13 @@ Con:
 
 ### 🛠️ Argumentos
 Donde los argumentos son los siguientes:
-- `N`: Cantidad de particulas
-- `L`: Tamaño del dominio
-- `V`: Velocidad de las partículas en la simulación
-- `epoch`: Cantidad de épocas de la simulación
+- `N`: Cantidad de partículas
+- `L`: Tamaño de la ranura entre cuadrado y rectángulo
+- `epoch`: Cantidad de épocas máxima de la simulación
 - `output`: Nombre opcional para el archivo de salida de la simulación
 
 Ejemplo:
 ```shell
- java -DN=1000 -DL=20 "-DV=0.3" -Drc=1 -Depoch=1000 -Dnoise=0 -Drand-dir=false -cp target/SdS-TP2-1.0-SNAPSHOT.jar OffLatticeSimulation
+ java -DN=300 "-DL=0.03" -Depoch=500 -Doutput=out.txt -cp target/SdS-TP2-1.0-SNAPSHOT.jar OffLatticeSimulation
 ```
 Nota: Los argumentos con punto pueden requerir estar en comillas dobles, como el caso de la velocidad.
-
-## 🔎 Animación y Análisis
-// TODO

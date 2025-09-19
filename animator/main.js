@@ -197,10 +197,10 @@ function drawParticlesAndCounter(ctx, particles, mapX, mapY, mapR, collisionCoun
   // --- Contador de colisiones ---
   if (collisionCount !== null) {
     ctx.fillStyle = "black";
-    ctx.font = `20px sans-serif`;
+    ctx.font = `15px sans-serif`;
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText(`#Events: ${collisionCount}`, 10, 10);
+    ctx.fillText(`#Events: ${collisionCount}`, 5, 10);
   }
 }
 
