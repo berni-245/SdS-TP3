@@ -8,7 +8,7 @@ public enum WallCollisionType {
     VERTICAL_COLLISION {
         @Override
         public void updateParticle(Particle particle, double sqrSize, double time) {
-            int wallId=particle.getX()>sqrSize?0:2;
+            int wallId=particle.getX()>sqrSize?2:0;
             PostProcessor.processImpulse(2*Math.abs(particle.getSpeedY()),time,wallId);
             particle.updateSpeedY(-particle.getSpeedY());
         }
@@ -18,7 +18,7 @@ public enum WallCollisionType {
         public void updateParticle(Particle particle, double sqrSize, double time) {
             double x=particle.getX();
             double rad=particle.getRadius();
-            int wallId=x>sqrSize+rad?3:x<sqrSize-rad?0:1;
+            int wallId=x>sqrSize+2*rad?3:x<sqrSize-2*rad?0:1;
             PostProcessor.processImpulse(2*Math.abs(particle.getSpeedX()),time,wallId);
             particle.updateSpeedX(-particle.getSpeedX());
         }
